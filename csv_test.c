@@ -42,25 +42,27 @@ int main(int argc, char*argv[]) {
             button[row] = (GtkWidget **)malloc(sizeof(GtkWidget *) * (col + 1));
             i = 0;
             newRow = NO;
+            textDelimiter = NO;
         }
         if(newCol == YES) {
             col++;
             button[row] = (GtkWidget **)realloc(button[row], sizeof(GtkWidget *) * (col + 1));
             i = 0;
             newCol = NO;
+            textDelimiter = NO;
         } 
         numRead = read(fd, &cell[i], sizeof(char));
         if(numRead == 0)
             break;
         switch(cell[i]) {
-            case 34  : /*It is the ASCII value of ". This will enable text within "" to be stored as it is */
-                if(cell[i - 1] != 34) {
-                    if(textDelimiter == YES)
-                        textDelimiter = NO;
-                    else
-                        textDelimiter = YES;
-                    i--;/* We don't want to show " in the program */
+            case '"'  : /*This will enable text within "" to be stored as it is */
+                if(i == 0) {
+                    textDelimiter = YES;
+                    i = -1;
+                    break;
                 }
+                if(cell[i - 1] == '"')
+                    i--;/* We don't want to show "" in the program */
                 break;
             case '\n': /*String has ended and line of the csv file also has ended, given string to button and increment row*/
                 cell[i] = '\0';
@@ -70,6 +72,10 @@ int main(int argc, char*argv[]) {
                 newRow = YES;
                 break;
             case ',' : /*String has ended and column of csv file is read, give strnig to button and increment col*/
+                if(cell[i - 1] == '"') {
+                    textDelimiter = NO;
+                    i--;
+                }
                 if(textDelimiter == YES)
                     break;
                 cell[i] = '\0';

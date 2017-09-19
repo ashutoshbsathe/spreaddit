@@ -7,8 +7,14 @@
 #include <gtk/gtk.h>
 #define YES 1
 #define NO 0
+
+#define START 1
+#define QUOTE 2
+#define END	  3
+#define COMMA 4
 int main(int argc, char*argv[]) {
     int fd, i = 0, numRead, newRow = NO, newCol = NO, row = 0, col = 0, textDelimiter = NO;
+	char laststate = START;
     char cell[1024]; /*Will contain content of 1 cell as a string*/
 
     GtkWidget *window;
@@ -51,18 +57,18 @@ int main(int argc, char*argv[]) {
             newCol = NO;
             textDelimiter = NO;
         } 
-        numRead = read(fd, &cell[i], sizeof(char));
+        numRead = read(fd, &cell[i], sizeof(char)); /* Yeah, read file character by character */
         if(numRead == 0)
             break;
         switch(cell[i]) {
             case '"'  : /*This will enable text within "" to be stored as it is */
-                if(i == 0) {
-                    textDelimiter = YES;
-                    i = -1;
-                    break;
-                }
-                if(cell[i - 1] == '"')
-                    i--;/* We don't want to show "" in the program */
+                if(textDelimiter == YES)
+					textDelimiter = NO;
+				else {
+					textDelimiter = YES;
+					i--;
+				}
+				laststate = QUOTE;
                 break;
             case '\n': /*String has ended and line of the csv file also has ended, given string to button and increment row*/
                 cell[i] = '\0';
@@ -70,20 +76,21 @@ int main(int argc, char*argv[]) {
                 button[row][col] = gtk_button_new_with_label(cell);
                 gtk_grid_attach(GTK_GRID(myGrid), button[row][col], col, row, 1, 1);
                 newRow = YES;
+				laststate = END;
                 break;
             case ',' : /*String has ended and column of csv file is read, give strnig to button and increment col*/
-                if(cell[i - 1] == '"') {
-                    textDelimiter = NO;
-                    i--;
-                }
-                if(textDelimiter == YES)
+                if(textDelimiter == YES) {
                     break;
+				}
+				if(laststate == QUOTE)
+					i--;
                 cell[i] = '\0';
                 puts(cell);
                 button[row][col] = gtk_button_new_with_label(cell);
                 gtk_grid_attach(GTK_GRID(myGrid), button[row][col], col, row, 1, 1);
                 newRow = NO;
                 newCol = YES;
+				laststate = COMMA;
                 break;
             default : 
                 break;

@@ -5,6 +5,7 @@
 #include <string.h>
 #include <errno.h>
 #include <gtk/gtk.h>
+
 #define YES 1
 #define NO 0
 
@@ -13,19 +14,33 @@
 #define END	  3
 #define COMMA 4
 
+GtkEntry *formula;
+GtkBuilder *builder;
+GtkCssProvider *provider;
+GtkStyleContext *context;
+GError *error = NULL;
+
+void buttonClicked(GtkWidget *widget, gpointer data) {
+	const char *label;
+	label = gtk_button_get_label(GTK_BUTTON(widget));
+	puts(label);
+	formula = GTK_ENTRY(gtk_builder_get_object(builder, "formulaEntry"));
+	gtk_entry_set_text(formula, label);
+	return;
+}
 int main(int argc, char*argv[]) {
 	int fd, i = 0, numRead, newRow = NO, newCol = NO, row = 0, col = 0, textDelimiter = NO;
 	char laststate = START;
 	char cell[1024]; /*Will contain content of 1 cell as a string*/
 
-	GtkBuilder *builder;
-	GError *error = NULL;
 	GtkWidget *window;
-	GtkWidget *myGrid;
 	GtkWidget *scroll;
+	GtkWidget *myGrid;
 	GtkWidget ***button;
 	button = (GtkWidget ***)malloc(sizeof(GtkWidget **) * (row + 1));
 	button[0] = (GtkWidget **)malloc(sizeof(GtkWidget *) * (col + 1));
+	provider = gtk_css_provider_new();
+	gtk_css_provider_load_from_file(provider, g_file_new_for_path("res/styles/styles.css"), &error);
 
 	scanf("%s", cell); /* Using the same array to store filename as well :P */
 	fd = open(cell, O_RDWR, 0666);
@@ -40,6 +55,7 @@ int main(int argc, char*argv[]) {
 	window = GTK_WIDGET(gtk_builder_get_object(builder, "mainWindow"));
 	scroll = GTK_WIDGET(gtk_builder_get_object(builder, "fileView"));
 	gtk_builder_connect_signals(builder, NULL);
+	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 	//window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	//scroll = gtk_scrolled_window_new(NULL, NULL);
 	//gtk_window_set_default_size(GTK_WINDOW(window), 650, 500);
@@ -84,7 +100,10 @@ int main(int argc, char*argv[]) {
 				cell[i] = '\0';
 				puts(cell);
 				button[row][col] = gtk_button_new_with_label(cell);
+				context = gtk_widget_get_style_context(button[row][col]);
+				gtk_style_context_add_class(context, "cell");
 				gtk_grid_attach(GTK_GRID(myGrid), button[row][col], col, row, 1, 1);
+				g_signal_connect(button[row][col], "clicked", G_CALLBACK(buttonClicked), NULL);
 				newRow = YES;
 				laststate = END;
 				break;
@@ -97,7 +116,10 @@ int main(int argc, char*argv[]) {
 				cell[i] = '\0';
 				puts(cell);
 				button[row][col] = gtk_button_new_with_label(cell);
+				context = gtk_widget_get_style_context(button[row][col]);
+				gtk_style_context_add_class(context, "cell");
 				gtk_grid_attach(GTK_GRID(myGrid), button[row][col], col, row, 1, 1);
+				g_signal_connect(button[row][col], "clicked", G_CALLBACK(buttonClicked), NULL);
 				newRow = NO;
 				newCol = YES;
 				laststate = COMMA;

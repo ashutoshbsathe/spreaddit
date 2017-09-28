@@ -36,9 +36,7 @@ int main(int argc, char*argv[]) {
 	GtkWidget *window;
 	GtkWidget *scroll;
 	GtkWidget *myGrid;
-	GtkWidget ***button;
-	button = (GtkWidget ***)malloc(sizeof(GtkWidget **) * (row + 1));
-	button[0] = (GtkWidget **)malloc(sizeof(GtkWidget *) * (col + 1));
+	GtkWidget *buf;
 	provider = gtk_css_provider_new();
 	gtk_css_provider_load_from_file(provider, g_file_new_for_path("res/styles/styles.css"), &error);
 
@@ -56,11 +54,6 @@ int main(int argc, char*argv[]) {
 	scroll = GTK_WIDGET(gtk_builder_get_object(builder, "fileView"));
 	gtk_builder_connect_signals(builder, NULL);
 	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
-	//window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	//scroll = gtk_scrolled_window_new(NULL, NULL);
-	//gtk_window_set_default_size(GTK_WINDOW(window), 650, 500);
-	//gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
-	//gtk_window_set_title(GTK_WINDOW(window), "Spreaddit - A lightweight spreadsheet editor !");
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	myGrid = gtk_grid_new();
 
@@ -68,15 +61,12 @@ int main(int argc, char*argv[]) {
 		if(newRow == YES) {
 			row++;
 			col = 0;
-			button = (GtkWidget ***)realloc(button, sizeof(GtkWidget **) * (row + 1));
-			button[row] = (GtkWidget **)malloc(sizeof(GtkWidget *) * (col + 1));
 			i = 0;
 			newRow = NO;
 			textDelimiter = NO;
 		}
 		if(newCol == YES) {
 			col++;
-			button[row] = (GtkWidget **)realloc(button[row], sizeof(GtkWidget *) * (col + 1));
 			i = 0;
 			newCol = NO;
 			textDelimiter = NO;
@@ -99,11 +89,11 @@ int main(int argc, char*argv[]) {
 					i--;
 				cell[i] = '\0';
 				puts(cell);
-				button[row][col] = gtk_button_new_with_label(cell);
-				context = gtk_widget_get_style_context(button[row][col]);
+				buf = gtk_button_new_with_label(cell);
+				context = gtk_widget_get_style_context(buf);
 				gtk_style_context_add_class(context, "cell");
-				gtk_grid_attach(GTK_GRID(myGrid), button[row][col], col, row, 1, 1);
-				g_signal_connect(button[row][col], "clicked", G_CALLBACK(buttonClicked), NULL);
+				gtk_grid_attach(GTK_GRID(myGrid), buf, col, row, 1, 1);
+				g_signal_connect(buf, "clicked", G_CALLBACK(buttonClicked), NULL);
 				newRow = YES;
 				laststate = END;
 				break;
@@ -115,11 +105,11 @@ int main(int argc, char*argv[]) {
 					i--;
 				cell[i] = '\0';
 				puts(cell);
-				button[row][col] = gtk_button_new_with_label(cell);
-				context = gtk_widget_get_style_context(button[row][col]);
-				gtk_style_context_add_class(context, "cell");
-				gtk_grid_attach(GTK_GRID(myGrid), button[row][col], col, row, 1, 1);
-				g_signal_connect(button[row][col], "clicked", G_CALLBACK(buttonClicked), NULL);
+				buf = gtk_button_new_with_label(cell);	
+				context = gtk_widget_get_style_context(buf);
+				gtk_style_context_add_class(context, "cell");	
+				gtk_grid_attach(GTK_GRID(myGrid), buf, col, row, 1, 1);
+				g_signal_connect(buf, "clicked", G_CALLBACK(buttonClicked), NULL);
 				newRow = NO;
 				newCol = YES;
 				laststate = COMMA;
@@ -129,8 +119,6 @@ int main(int argc, char*argv[]) {
 		}
 		i++;
 	}
-	//gtk_container_add(GTK_CONTAINER(scroll), myGrid);
-	//gtk_container_add(GTK_CONTAINER(window), scroll);
 	gtk_container_add(GTK_CONTAINER(scroll), myGrid);
 	gtk_widget_show_all(window);
 	gtk_main();

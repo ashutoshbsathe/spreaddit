@@ -18,15 +18,86 @@ GtkEntry *formula;
 GtkBuilder *builder;
 GtkCssProvider *provider;
 GtkStyleContext *context;
+GtkWidget *activecell = NULL;
 GError *error = NULL;
 
 void buttonClicked(GtkWidget *widget, gpointer data) {
 	const char *label;
 	label = gtk_button_get_label(GTK_BUTTON(widget));
 	puts(label);
+	if(activecell != NULL) {
+		context = gtk_widget_get_style_context(activecell);
+		gtk_style_context_remove_class(context, "active");
+	}
+	context = gtk_widget_get_style_context(widget);
+	gtk_style_context_add_class(context, "active");
 	formula = GTK_ENTRY(gtk_builder_get_object(builder, "formulaEntry"));
 	gtk_entry_set_text(formula, label);
+	activecell = widget;
 	return;
+}
+void boldClicked(GtkWidget *widget, gpointer data) {
+	char str[1024];
+	GtkWidget *label;
+	strcpy(str, "<b>");
+	strcat(str, gtk_button_get_label(GTK_BUTTON(activecell)));
+	strcat(str, "</b>");
+	context = gtk_widget_get_style_context(activecell);
+	if(gtk_style_context_has_class(context, "bold") == TRUE) {
+		label = gtk_bin_get_child(GTK_BIN(activecell));
+		gtk_label_set_text(GTK_LABEL(label), gtk_button_get_label(GTK_BUTTON(activecell)));
+		gtk_style_context_remove_class(context, "bold");
+		return;
+	}
+	label = gtk_bin_get_child(GTK_BIN(activecell));
+	gtk_label_set_markup(GTK_LABEL(label), str);
+	gtk_style_context_add_class(context, "bold");
+	printf("Added label to activecell\n");
+}
+void italicClicked(GtkWidget *widget, gpointer data) {
+	char str[1024];
+	GtkWidget *label;
+	strcpy(str, "<i>");
+	strcat(str, gtk_button_get_label(GTK_BUTTON(activecell)));
+	strcat(str, "</i>");
+	context = gtk_widget_get_style_context(activecell);
+	if(gtk_style_context_has_class(context, "italic") == TRUE) {
+		label = gtk_bin_get_child(GTK_BIN(activecell));
+		gtk_label_set_text(GTK_LABEL(label), gtk_button_get_label(GTK_BUTTON(activecell)));
+		gtk_style_context_remove_class(context, "italic");
+		return;
+	}
+	label = gtk_bin_get_child(GTK_BIN(activecell));
+	gtk_label_set_markup(GTK_LABEL(label), str);
+	gtk_style_context_add_class(context, "italic");
+	printf("Added label to activecell\n");
+}
+void underlineClicked(GtkWidget *widget, gpointer data) {
+	char str[1024];
+	GtkWidget *label;
+	strcpy(str, "<u>");
+	strcat(str, gtk_button_get_label(GTK_BUTTON(activecell)));
+	strcat(str, "</u>");
+	context = gtk_widget_get_style_context(activecell);
+	if(gtk_style_context_has_class(context, "underline") == TRUE) {
+		label = gtk_bin_get_child(GTK_BIN(activecell));
+		gtk_label_set_text(GTK_LABEL(label), gtk_button_get_label(GTK_BUTTON(activecell)));
+		gtk_style_context_remove_class(context, "underline");
+		return;
+	}
+	label = gtk_bin_get_child(GTK_BIN(activecell));
+	gtk_label_set_markup(GTK_LABEL(label), str);
+	gtk_style_context_add_class(context, "underline");
+	printf("Added label to activecell\n");
+}
+void applyClicked(GtkWidget *widget, gpointer data) {
+	const char *label;
+	if(activecell != NULL) {
+		label = gtk_entry_get_text(formula);
+		gtk_button_set_label(GTK_BUTTON(activecell), label);
+	}
+	else
+		g_print("Please select a cell first\n");
 }
 int main(int argc, char*argv[]) {
 	int fd, i = 0, numRead, newRow = NO, newCol = NO, row = 0, col = 0, textDelimiter = NO;
@@ -120,6 +191,10 @@ int main(int argc, char*argv[]) {
 		i++;
 	}
 	gtk_container_add(GTK_CONTAINER(scroll), myGrid);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "boldButton")), "clicked", G_CALLBACK(boldClicked), NULL);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "italicButton")), "clicked", G_CALLBACK(italicClicked), NULL);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "ulineButton")), "clicked", G_CALLBACK(underlineClicked), NULL);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "applyButton")), "clicked", G_CALLBACK(applyClicked), NULL);
 	gtk_widget_show_all(window);
 	gtk_main();
 	return 0;

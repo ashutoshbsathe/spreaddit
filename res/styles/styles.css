@@ -4,6 +4,22 @@
 	padding:0px;
 	border: 1px solid black;
 }
-.clicked {
-	background: #d3d3d3;
+.active {
+	background:#eeeeee;
+	border: 2px solid black;
+}
+.bold {
+	/*
+	 * Just a dummy class to check if the text is bold or not
+	 */
+}
+.italic {
+	/*
+	 * Just a dummy class to check if the text is bold or not
+	 */
+}
+.underline {
+	/*
+	 * Just a dummy class to check if the text is bold or not
+	 */
 }

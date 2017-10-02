@@ -24,7 +24,6 @@ GError *error = NULL;
 void buttonClicked(GtkWidget *widget, gpointer data) {
 	const char *label;
 	label = gtk_button_get_label(GTK_BUTTON(widget));
-	puts(label);
 	if(activecell != NULL) {
 		context = gtk_widget_get_style_context(activecell);
 		gtk_style_context_remove_class(context, "active");
@@ -52,7 +51,6 @@ void boldClicked(GtkWidget *widget, gpointer data) {
 	label = gtk_bin_get_child(GTK_BIN(activecell));
 	gtk_label_set_markup(GTK_LABEL(label), str);
 	gtk_style_context_add_class(context, "bold");
-	printf("Added label to activecell\n");
 }
 void italicClicked(GtkWidget *widget, gpointer data) {
 	char str[1024];
@@ -70,7 +68,6 @@ void italicClicked(GtkWidget *widget, gpointer data) {
 	label = gtk_bin_get_child(GTK_BIN(activecell));
 	gtk_label_set_markup(GTK_LABEL(label), str);
 	gtk_style_context_add_class(context, "italic");
-	printf("Added label to activecell\n");
 }
 void underlineClicked(GtkWidget *widget, gpointer data) {
 	char str[1024];
@@ -88,7 +85,6 @@ void underlineClicked(GtkWidget *widget, gpointer data) {
 	label = gtk_bin_get_child(GTK_BIN(activecell));
 	gtk_label_set_markup(GTK_LABEL(label), str);
 	gtk_style_context_add_class(context, "underline");
-	printf("Added label to activecell\n");
 }
 void applyClicked(GtkWidget *widget, gpointer data) {
 	const char *label;
@@ -159,7 +155,6 @@ int main(int argc, char*argv[]) {
 				if(laststate == QUOTE)
 					i--;
 				cell[i] = '\0';
-				puts(cell);
 				buf = gtk_button_new_with_label(cell);
 				context = gtk_widget_get_style_context(buf);
 				gtk_style_context_add_class(context, "cell");
@@ -175,7 +170,6 @@ int main(int argc, char*argv[]) {
 				if(laststate == QUOTE)
 					i--;
 				cell[i] = '\0';
-				puts(cell);
 				buf = gtk_button_new_with_label(cell);	
 				context = gtk_widget_get_style_context(buf);
 				gtk_style_context_add_class(context, "cell");	

@@ -38,6 +38,10 @@ void buttonClicked(GtkWidget *widget, gpointer data) {
 void boldClicked(GtkWidget *widget, gpointer data) {
 	char str[1024];
 	GtkWidget *label;
+	if(activecell == NULL) {
+		g_print("Please select a tile before making changes !\n");
+		return;
+	}
 	strcpy(str, "<b>");
 	strcat(str, gtk_button_get_label(GTK_BUTTON(activecell)));
 	strcat(str, "</b>");
@@ -55,6 +59,10 @@ void boldClicked(GtkWidget *widget, gpointer data) {
 void italicClicked(GtkWidget *widget, gpointer data) {
 	char str[1024];
 	GtkWidget *label;
+	if(activecell == NULL) {
+		g_print("Please select a tile before making changes !\n");
+		return;
+	}
 	strcpy(str, "<i>");
 	strcat(str, gtk_button_get_label(GTK_BUTTON(activecell)));
 	strcat(str, "</i>");
@@ -72,6 +80,10 @@ void italicClicked(GtkWidget *widget, gpointer data) {
 void underlineClicked(GtkWidget *widget, gpointer data) {
 	char str[1024];
 	GtkWidget *label;
+	if(activecell == NULL) {
+		g_print("Please select a tile before making changes !\n");
+		return;
+	}
 	strcpy(str, "<u>");
 	strcat(str, gtk_button_get_label(GTK_BUTTON(activecell)));
 	strcat(str, "</u>");

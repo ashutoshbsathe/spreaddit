@@ -23,3 +23,10 @@
 	 * Just a dummy class to check if the text is bold or not
 	 */
 }
+.vguide {
+	margin:0px;
+	padding:0px;
+	border:1px solid black;
+	background:#dddddd;
+	border-radius:0px;
+}

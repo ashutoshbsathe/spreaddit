@@ -16,15 +16,15 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-open</property>
   </object>
+  <object class="GtkImage" id="openODS">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">document-open</property>
+  </object>
   <object class="GtkImage" id="saveImage">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="stock">gtk-save</property>
-  </object>
-  <object class="GtkImage" id="ulineImage">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="pixbuf">../imgs/underline.png</property>
   </object>
   <object class="GtkWindow" id="mainWindow">
     <property name="can_focus">False</property>
@@ -73,11 +73,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="ulineButton">
+              <object class="GtkButton" id="openODSbutton">
+                <property name="label" translatable="yes">Open .ods file</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="image">ulineImage</property>
+                <property name="image">openODS</property>
                 <property name="always_show_image">True</property>
               </object>
               <packing>
@@ -89,7 +90,7 @@
             </child>
             <child>
               <object class="GtkButton" id="openButton">
-                <property name="label" translatable="yes"> Open</property>
+                <property name="label" translatable="yes"> Open .csv file</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>

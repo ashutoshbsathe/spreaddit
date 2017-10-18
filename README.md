@@ -4,6 +4,12 @@ Spreaddit = Spreadsheet Edit.
 This is still a WIP.
 
 ### Dependencies :
-<b>GTK+3</b> : <code>sudo apt-get install libgtk-3.0-dev
+<b>GTK+3</b> : 
+Needed for GUI of the program
+<code>sudo apt-get install libgtk-3.0-dev</code>
+
+<b>LibXML2</b> :
+Needed for reading ods files
+<code>sudo apt-get install libxml2-dev</code>
 
 (Icons used in this project are taken from libreoffice wiki along with default icons in gtk library)

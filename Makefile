@@ -1,5 +1,6 @@
-CFLAGS = -Wall -g `pkg-config --cflags gtk+-3.0`
-LDFLAGS = `pkg-config --libs gtk+-3.0` `pkg-config --cflags glib-2.0`
+SHELL = /bin/bash
+CFLAGS = -Wall -export-dynamic -g `pkg-config --cflags gtk+-3.0`
+LDFLAGS = `pkg-config --libs gtk+-3.0`
 
 new: *.c *.h
 	mkdir objects

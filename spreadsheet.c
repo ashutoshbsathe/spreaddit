@@ -200,6 +200,47 @@ GtkWidget *getFileView(Spreadsheet *sp){
  * And then will keep using XML parser from "utils"to get next string
  */
 void addGridFromODSFile(Spreadsheet *sp, char *filename){
+	FILE *fp;
+	int maxcol = 0, row = 0, col = 0, i = 0;
+	char str[1024];
+	GtkWidget *buf;
+	generateDataFromODS(filename);
+	fp = fopen("utils/data", "r");
+	if(fp == NULL) {
+		gtk_label_set_text(GTK_LABEL(sp->message), "Unable to get data from given .ods file !");
+		return;
+	}
+	fscanf(fp, "%[^\n]\n", str);
+	maxcol = atoi(str);
+	printf("%d\n", maxcol);
+	while(fscanf(fp, "%c", &str[i]) != -1 && maxcol) {
+		if(str[i] == '\n') {
+			str[i] = '\0';
+			/*
+			if(row < 2) {
+				printf("%s\n", str);
+			}
+			*/
+			buf = gtk_button_new_with_label(str);
+			sp->context = gtk_widget_get_style_context(buf);
+			gtk_style_context_add_class(sp->context, "cell");
+			gtk_grid_attach(GTK_GRID(sp->grid), buf, col, row, 1, 1);
+			g_signal_connect(buf, "clicked", G_CALLBACK(cellClicked), sp);
+			g_signal_connect(buf, "focus", G_CALLBACK(cellFocussed), sp);
+			col++;
+			if(col >= maxcol) {
+				col = 0;
+				row++;
+			}
+			i = -1;/* Sp after incrementing it outside the if makes it zero */
+		}
+		i++;
+	}
+	sp->max.col = maxcol;
+	sp->max.row = row;
+	gtk_container_add(GTK_CONTAINER(sp->scroll), sp->grid);
+	remove("utils/data");
+	return ;
 }
 /*
  * Function sorts the spreadheet according to direction and type

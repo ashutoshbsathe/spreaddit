@@ -1,2 +1,3 @@
 #!/bin/bash
-rm -rf uncompressed
+echo "Cleaning up...."
+rm -rf utils/uncompressed

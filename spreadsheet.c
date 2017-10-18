@@ -212,7 +212,6 @@ void addGridFromODSFile(Spreadsheet *sp, char *filename){
 	}
 	fscanf(fp, "%[^\n]\n", str);
 	maxcol = atoi(str);
-	printf("%d\n", maxcol);
 	while(fscanf(fp, "%c", &str[i]) != -1 && maxcol) {
 		if(str[i] == '\n') {
 			str[i] = '\0';

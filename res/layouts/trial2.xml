@@ -6,6 +6,31 @@
     <property name="can_focus">False</property>
     <property name="pixbuf">../imgs/bold.png</property>
   </object>
+  <object class="GtkImage" id="delcol">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">dialog-close</property>
+  </object>
+  <object class="GtkImage" id="delrow">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">dialog-close</property>
+  </object>
+  <object class="GtkImage" id="insertColLef">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+	<property name="pixbuf">../imgs/insertcolleft.png</property>
+  </object>
+  <object class="GtkImage" id="insertColRigh">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+	<property name="pixbuf">../imgs/insertcolright.png</property>
+  </object>
+  <object class="GtkImage" id="insertRowAbov">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+	<property name="pixbuf">../imgs/insertrowabove.png</property>
+  </object>
   <object class="GtkImage" id="insertRowBelo">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -146,13 +171,84 @@ current document)</property>
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkButton" id="insertRowAbove">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Inserts the row above currently active cell</property>
+                <property name="image">insertRowAbov</property>
+                <property name="always_show_image">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">6</property>
+                <property name="non_homogeneous">True</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkButton" id="insertColRight">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Inserts the column to the right of current cell.</property>
+                <property name="image">insertColRigh</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">7</property>
+                <property name="non_homogeneous">True</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkButton" id="insertColLeft">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Inserts the column to the left of current cell.</property>
+                <property name="image">insertColLef</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">8</property>
+                <property name="non_homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="deleteRow">
+                <property name="label" translatable="yes">Row</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Removes current row from the sheet</property>
+                <property name="image">delrow</property>
+                <property name="always_show_image">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">9</property>
+                <property name="non_homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="deleteCol">
+                <property name="label" translatable="yes">Column</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Removes current column from the sheet</property>
+                <property name="image">delcol</property>
+                <property name="always_show_image">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">10</property>
+                <property name="non_homogeneous">True</property>
+              </packing>
             </child>
             <child>
               <placeholder/>

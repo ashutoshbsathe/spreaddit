@@ -9,6 +9,7 @@ void parseTable(xmlDocPtr doc, xmlNodePtr cur) {
 	xmlChar *key;
 	xmlNodePtr tmp;
 	xmlChar *str = NULL;
+	xmlChar *prev = NULL;
 	int i = 0, j = 0;
 	cur = cur->xmlChildrenNode;
 	while(cur != NULL) {
@@ -33,6 +34,15 @@ void parseTable(xmlDocPtr doc, xmlNodePtr cur) {
 		if((!xmlStrcmp(tmp->name, (const xmlChar *)"p"))) {
 			key = xmlNodeListGetString(doc, tmp->xmlChildrenNode, 1);
 			fprintf(fp, "%s\n", key);
+			str = xmlGetProp(cur, "number-columns-repeated");
+			if(str != NULL) {
+				j = atoi(str) - 1;
+				while(j > 0) {
+					fprintf(fp, "%s\n", key);
+					j--;
+					i++;
+				}
+			}
 			i++;
 			xmlFree(key);
 		}
@@ -43,6 +53,7 @@ void parseTable(xmlDocPtr doc, xmlNodePtr cur) {
 void generateDataFromODS(char *filename) {
 	xmlDocPtr doc;
 	xmlNodePtr cur;
+	int col = 0;
 	char command[1024];
 	xmlChar *str = NULL;
 	fp = fopen("utils/data", "w+");
@@ -83,7 +94,12 @@ void generateDataFromODS(char *filename) {
 	while(cur != NULL) {
 		if((!xmlStrcmp(cur->name, (const xmlChar *)"table-column"))) {
 			str = xmlGetProp(cur, "number-columns-repeated");
-			fprintf(fp, "%s\n", str);
+			if(str != NULL) {
+				col += atoi(str);
+				fprintf(fp, "%d\n", col);
+			}
+			else
+				col++;
 		}
 		if((!xmlStrcmp(cur->name, (const xmlChar *)"table-row"))) {
 			parseTable(doc, cur);

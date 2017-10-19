@@ -27,6 +27,70 @@ void insertrowbelowcell(GtkWidget *widget, gpointer data) {
 	gtk_widget_show_all(window);
 	return;
 }
+void insertrowabovecell(GtkWidget *widget, gpointer data) {
+	int i;
+	Spreadsheet *tmp = (Spreadsheet *)data;
+	GtkWidget *buf;
+	if(tmp->active.row < 0) {
+		gtk_label_set_text(GTK_LABEL(tmp->message), "Please select a cell first !");
+		return;
+	}
+	gtk_grid_insert_row(GTK_GRID(tmp->grid), tmp->active.row );
+	for(i = 0; i <= tmp->max.col; i++) {
+		buf = gtk_button_new_with_label(" ");
+		tmp->context = gtk_widget_get_style_context(buf);
+		gtk_style_context_add_class(tmp->context, "cell");
+		gtk_grid_attach(GTK_GRID(tmp->grid), buf, i, tmp->active.row, 1, 1);
+		g_signal_connect(buf, "clicked", G_CALLBACK(cellClicked), tmp);
+		g_signal_connect(buf, "focus", G_CALLBACK(cellFocussed), tmp);
+	}
+	tmp->active.row++;
+	cellClicked(tmp->activecell, tmp);
+	gtk_widget_show_all(window);
+	return;
+}
+void insertcoltorightcell(GtkWidget *widget, gpointer data) {
+	int i;
+	Spreadsheet *tmp = (Spreadsheet *)data;
+	GtkWidget *buf;
+	if(tmp->active.row < 0) {
+		gtk_label_set_text(GTK_LABEL(tmp->message), "Please select a cell first !");
+		return;
+	}
+	gtk_grid_insert_column(GTK_GRID(tmp->grid), tmp->active.col + 1);
+	for(i = 0; i <= tmp->max.row; i++) {
+		buf = gtk_button_new_with_label(" ");
+		tmp->context = gtk_widget_get_style_context(buf);
+		gtk_style_context_add_class(tmp->context, "cell");
+		gtk_grid_attach(GTK_GRID(tmp->grid), buf, tmp->active.col + 1, i, 1, 1);
+		g_signal_connect(buf, "clicked", G_CALLBACK(cellClicked), tmp);
+		g_signal_connect(buf, "focus", G_CALLBACK(cellFocussed), tmp);
+	}
+	gtk_widget_show_all(window);
+	return;
+}
+void insertcoltoleftcell(GtkWidget *widget, gpointer data) {
+	int i;
+	Spreadsheet *tmp = (Spreadsheet *)data;
+	GtkWidget *buf;
+	if(tmp->active.row < 0) {
+		gtk_label_set_text(GTK_LABEL(tmp->message), "Please select a cell first !");
+		return;
+	}
+	gtk_grid_insert_column(GTK_GRID(tmp->grid), tmp->active.col);
+	for(i = 0; i <= tmp->max.row; i++) {
+		buf = gtk_button_new_with_label(" ");
+		tmp->context = gtk_widget_get_style_context(buf);
+		gtk_style_context_add_class(tmp->context, "cell");
+		gtk_grid_attach(GTK_GRID(tmp->grid), buf, tmp->active.col , i, 1, 1);
+		g_signal_connect(buf, "clicked", G_CALLBACK(cellClicked), tmp);
+		g_signal_connect(buf, "focus", G_CALLBACK(cellFocussed), tmp);
+	}
+	tmp->active.col++;
+	cellClicked(tmp->activecell, tmp);
+	gtk_widget_show_all(window);
+	return;
+}
 void boldClicked(GtkWidget *widget, gpointer data) {
 	char str[1024], tmp[1024];
 	Spreadsheet *sheet = (Spreadsheet *)data;
@@ -142,7 +206,19 @@ int main(int argc, char*argv[]) {
 	tmp = GTK_WIDGET(gtk_builder_get_object(builder, "insertRowBelow"));
 	context = gtk_widget_get_style_context(tmp);
 	gtk_style_context_add_class(context, "tool-button");
-	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "insertRowBelow")), "clicked", G_CALLBACK(insertrowbelowcell), &sheet);
+	g_signal_connect(tmp, "clicked", G_CALLBACK(insertrowbelowcell), &sheet);
+	tmp = GTK_WIDGET(gtk_builder_get_object(builder, "insertRowAbove"));
+	context = gtk_widget_get_style_context(tmp);
+	gtk_style_context_add_class(context, "tool-button");
+	g_signal_connect(tmp, "clicked", G_CALLBACK(insertrowabovecell), &sheet);
+	tmp = GTK_WIDGET(gtk_builder_get_object(builder, "insertColRight"));
+	context = gtk_widget_get_style_context(tmp);
+	gtk_style_context_add_class(context, "tool-button");
+	g_signal_connect(tmp, "clicked", G_CALLBACK(insertcoltorightcell), &sheet);
+	tmp = GTK_WIDGET(gtk_builder_get_object(builder, "insertColLeft"));
+	context = gtk_widget_get_style_context(tmp);
+	gtk_style_context_add_class(context, "tool-button");
+	g_signal_connect(tmp, "clicked", G_CALLBACK(insertcoltoleftcell), &sheet);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "saveButton")), "clicked", G_CALLBACK(saveClicked), &sheet);
 	gtk_widget_show_all(window);
 	gtk_main();

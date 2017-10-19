@@ -261,13 +261,17 @@ void addGridFromODSFile(Spreadsheet *sp, char *filename){
 			sp->context = gtk_widget_get_style_context(buf);
 			gtk_style_context_add_class(sp->context, "cell");
 			gtk_grid_attach(GTK_GRID(sp->grid), buf, col, row, 1, 1);
+			printf("%s", str);
 			g_signal_connect(buf, "clicked", G_CALLBACK(cellClicked), sp);
 			g_signal_connect(buf, "focus", G_CALLBACK(cellFocussed), sp);
 			col++;
 			if(col >= maxcol) {
 				col = 0;
+				printf("\n");
 				row++;
 			}
+			else
+				printf(",");
 			i = -1;/* Sp after incrementing it outside the if makes it zero */
 		}
 		i++;
@@ -275,7 +279,7 @@ void addGridFromODSFile(Spreadsheet *sp, char *filename){
 	sp->max.col = maxcol;
 	sp->max.row = row;
 	gtk_container_add(GTK_CONTAINER(sp->scroll), sp->grid);
-	remove("utils/data");
+	fclose(fp);
 	return ;
 }
 /*
@@ -292,7 +296,7 @@ typedef struct node {
 	short type;
 	union Data {
 		const char *label;
-		int num;
+		double num;
 	}data;
 	short bold;
 	short italic;
@@ -312,9 +316,9 @@ int comparerows (const void *one, const void *two) {
 		ret = strcmp(a[i].data.label, b[i].data.label);
 	return ret;
 }
-char *inttoarr(int num) {
+char *floatttoarr(double num) {
 	char *buf = (char *)malloc(64);
-	sprintf(buf, "%d", num);
+	sprintf(buf, "%lf", num);
 	return buf;
 }
 void boldClicked(GtkWidget *widget, gpointer data);
@@ -322,7 +326,7 @@ void italicClicked(GtkWidget *widget, gpointer data);
 void sortGrid(Spreadsheet *sp, int type, int *read) {
 	node **arr = NULL;
 	GtkWidget *tmp, *grid;
-	int i, j, flag = 0, num;
+	int i, j, flag = 0, num, count = 0;
 	GList *children, *iter;
 	const char *label;
 	
@@ -363,11 +367,18 @@ void sortGrid(Spreadsheet *sp, int type, int *read) {
 		if(arr[i][sp->active.col].data.label[j] == '-')
 			j++;
 		flag = 0;
+		count = 0;
 		for(; j < strlen(arr[i][sp->active.col].data.label); j++) {
+			if(arr[i][sp->active.col].data.label[j] == '.'){
+				j++;
+				count++;
+			}
 			if(arr[i][sp->active.col].data.label[j] < '0' || arr[i][sp->active.col].data.label[j] > '9') {
 				flag = 1;
 				break;
 			}
+			if(count)
+				count++;
 		}
 		if(flag == 1)
 			break;
@@ -375,6 +386,8 @@ void sortGrid(Spreadsheet *sp, int type, int *read) {
 	if(flag == 0) {
 		for(i = 0; i < sp->max.row; i++) {
 			num = atoi(arr[i][sp->active.col].data.label);
+			while(count > 0)
+				num = num / 10.0;
 			arr[i][sp->active.col].data.num = num;
 			arr[i][sp->active.col].type = ACTVNUM;
 		}
@@ -399,7 +412,7 @@ void sortGrid(Spreadsheet *sp, int type, int *read) {
 				printf(",");
 			*/
 			if(arr[i][j].type == ACTVNUM) 
-				label = inttoarr(arr[i][j].data.num);
+				label = floatttoarr(arr[i][j].data.num);
 			else
 				label = arr[i][j].data.label;
 			tmp = gtk_button_new_with_label(label);
@@ -425,72 +438,3 @@ void sortGrid(Spreadsheet *sp, int type, int *read) {
 	sp->grid = grid;
 	gtk_container_add(GTK_CONTAINER(sp->scroll), sp->grid);
 }
-//void sortGrid(Spreadsheet *sp, int direction, int type){
-//	int i, string = NO, j = 0, minindex, compare;
-//	int *array = (int *)malloc(sizeof(int) * sp->max.row);
-//	const char *label;
-//	if(direction == ROW) {
-//		/*
-//		 * First of all check if the active row contains all non empty strings otherwise we don't sort them
-//		 */
-//		for(i = 0; i < sp->max.col; i++) {
-//			label = gtk_button_get_label(GTK_BUTTON(gtk_grid_get_child_at(GTK_GRID(sp->grid), i, sp->active.row)));
-//			if(strcmp(label, " ") == 0) {
-//				displayMessage(sp, "Cannot sort the element since few cells are empty in this row");
-//				//gtk_label_set_text(GTK_LABEL(sp->message), "Cannot sort the element since few cells are empty in this row");
-//				return;
-//			}
-//		}
-//		/*
-//		 * Check if row contains all the numbers
-//		 */
-//		for(i = 0; i < sp->max.col; i++) {
-//			label = gtk_button_get_label(GTK_BUTTON(gtk_grid_get_child_at(GTK_GRID(sp->grid), i, sp->active.row)));
-//			j = 0;
-//			if(label[j] == '-')
-//				j++;
-//			for(;j < strlen(label); j++) {
-//				if(label[j] < '0' || label[j] > '9') {
-//					printf("Unacceptable character %c %d\n", label[j], label[j]);
-//					string = YES;
-//					break;
-//				}
-//			}
-//			if(string == YES)
-//				break;
-//			else {
-//				array[i] = atoi(label);
-//				printf("Array[%d] = %d\n", i, array[i]);
-//			}
-//		}
-//		printf("String = %d\n", string);
-//		if(type == ASC) {
-//			for(i = 0; i < sp->max.col; i++) {
-//				minindex = i;
-//				for(j = i + 1; j < sp->max.col; j++) {
-//					if(string == YES)
-//						compare = strcmp(gtk_button_get_label(GTK_BUTTON(gtk_grid_get_child_at(GTK_GRID(sp->grid), i, sp->active.row))), gtk_button_get_label(GTK_BUTTON(gtk_grid_get_child_at(GTK_GRID(sp->grid),j, sp->active.row))));
-//					else {
-//						printf("Comparing %d wiht %d\n", array[j], array[i]);
-//						compare = array[j] - array[i];
-//					}
-//					if(compare < 0)
-//						minindex = j;
-//				}
-//				printf("Swap column %d with column %d\n", i, minindex);
-//				swap(sp, COL, i, minindex);
-//				if(i != minindex && string == 0) {
-//					array[i] = array[i] + array[minindex];
-//					array[minindex] = array[i] - array[minindex];
-//					array[i] = array[i] - array[minindex];
-//					for(j = 0; j < sp->max.col; j++) {
-//						printf("%d ", array[j]);
-//					}
-//					printf("\n");
-//				}
-//			}
-//		}
-//		else {
-//		}
-//	}
-//}

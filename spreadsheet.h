@@ -18,4 +18,4 @@ void addGridFromCSVFile(Spreadsheet *sp, char *filename);
 GtkWidget *getActiveCell(Spreadsheet *sp);
 GtkWidget *getFileView(Spreadsheet *sp);
 void addGridFromODSFile(Spreadsheet *sp, char *filename);
-void sortGrid(Spreadsheet *sp, int direction, int type);
+void sortGrid(Spreadsheet *sp, int direction, int *read);

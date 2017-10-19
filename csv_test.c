@@ -97,9 +97,17 @@ void applyClicked(GtkWidget *widget, gpointer data) {
 	else
 		gtk_label_set_text(GTK_LABEL(tmp->message), "Please select a cell before applying changes !");
 }
+void saveClicked(GtkWidget *widget, gpointer data) {
+	Spreadsheet *sheet = (Spreadsheet *)data;
+	int read = 0;
+	sortGrid(sheet, 1002, &read);
+	gtk_widget_show_all(window);
+}
 int main(int argc, char*argv[]) {
 	GtkCssProvider *provider;
+	GtkStyleContext *context;
 	GtkBuilder *builder;
+	GtkWidget *tmp;
 	GError *error = NULL;
 	Spreadsheet sheet;
 	if(argc != 2) {
@@ -116,11 +124,26 @@ int main(int argc, char*argv[]) {
 	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	init(&sheet, builder);
-	addGridFromCSVFile(&sheet, argv[1]);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "boldButton")), "clicked", G_CALLBACK(boldClicked), &sheet);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "italicButton")), "clicked", G_CALLBACK(italicClicked), &sheet);
+	//addGridFromCSVFile(&sheet, argv[1]);
+	addGridFromODSFile(&sheet, argv[1]);
+	context = gtk_widget_get_style_context(window);
+	gtk_style_context_add_class(context, "window");
+	tmp = GTK_WIDGET(gtk_builder_get_object(builder, "boldButton"));
+	context = gtk_widget_get_style_context(tmp);
+	gtk_style_context_add_class(context, "formatting-button");
+	g_signal_connect(tmp, "clicked", G_CALLBACK(boldClicked), &sheet);
+	tmp = GTK_WIDGET(gtk_builder_get_object(builder, "italicButton"));
+	context = gtk_widget_get_style_context(tmp);
+	gtk_style_context_add_class(context, "formatting-button");
+	g_signal_connect(tmp, "clicked", G_CALLBACK(italicClicked), &sheet);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "applyButton")), "clicked", G_CALLBACK(applyClicked), &sheet);
+	tmp = GTK_WIDGET(gtk_builder_get_object(builder, "insertRowBelow"));
+	context = gtk_widget_get_style_context(tmp);
+	gtk_style_context_add_class(context, "tool-button");
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "insertRowBelow")), "clicked", G_CALLBACK(insertrowbelowcell), &sheet);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "saveButton")), "clicked", G_CALLBACK(saveClicked), &sheet);
 	gtk_widget_show_all(window);
 	gtk_main();
 	return 0;

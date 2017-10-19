@@ -14,6 +14,7 @@ void parseTable(xmlDocPtr doc, xmlNodePtr cur) {
 	while(cur != NULL) {
 		tmp = cur->xmlChildrenNode;
 		if(tmp == NULL) {
+			str = xmlGetProp(cur, "number-columns-repeated");
 			if(str != NULL) {
 				j = atoi(str);
 				while(j > 0) {

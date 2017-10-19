@@ -1,8 +1,9 @@
 .cell {
 	background: #ffffff;
 	margin:0px;
-	padding:0px;
+	padding:1px 1px 1px 1px;
 	border: 1px solid black;
+	transition: all 0.2s ease-in;
 }
 .active {
 	background:#eeeeee;
@@ -18,15 +19,20 @@
 	 * Just a dummy class to check if the text is bold or not
 	 */
 }
-.underline {
-	/*
-	 * Just a dummy class to check if the text is bold or not
-	 */
+.window {
+	padding: 15px 15px 15px 15px;
 }
-.vguide {
-	margin:0px;
-	padding:0px;
-	border:1px solid black;
-	background:#dddddd;
-	border-radius:0px;
+.formatting-button {
+	background: #efefef;
+	border: 1.5px solid black;
+}
+.tool-button {
+	background: #ffffff;
+	border: 0.5px solid black;
+}
+.focus {
+	background: #eeee00;
+	color: #000000;
+	transition: all 1s ease-in;
+	border: 0.5px solid black;
 }

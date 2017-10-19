@@ -6,6 +6,11 @@
     <property name="can_focus">False</property>
     <property name="pixbuf">../imgs/bold.png</property>
   </object>
+  <object class="GtkImage" id="insertRowBelo">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">../imgs/insertrowbelow.png</property>
+  </object>
   <object class="GtkImage" id="italicButto">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -104,6 +109,7 @@ current document)</property>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">3</property>
+                <property name="non_homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -120,20 +126,23 @@ current document)</property>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">4</property>
+                <property name="non_homogeneous">True</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="insertRowBelow">
-                <property name="label" translatable="yes">Insert Row Below</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Inserts the row below currently active cell</property>
+                <property name="image">insertRowBelo</property>
+                <property name="always_show_image">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">5</property>
+                <property name="non_homogeneous">True</property>
               </packing>
             </child>
             <child>

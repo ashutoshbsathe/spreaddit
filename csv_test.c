@@ -177,6 +177,62 @@ void applyClicked(GtkWidget *widget, gpointer data) {
 	else
 		displayMessage(tmp, "Please select a cell before applying changes !");
 }
+void openODSClicked(GtkWidget *widget, gpointer data) {
+	static char *filename = NULL;
+	Spreadsheet *sheet = (Spreadsheet *)data;
+	GtkWidget *dialog;
+	GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+	gint res;
+	if(filename == NULL) {
+		dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(window), action, "Cancel", GTK_RESPONSE_CANCEL, "Open", GTK_RESPONSE_ACCEPT, NULL);
+		res = gtk_dialog_run (GTK_DIALOG (dialog));
+		if (res == GTK_RESPONSE_ACCEPT) {
+			GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
+			filename = gtk_file_chooser_get_filename (chooser);
+		}
+		gtk_widget_destroy(dialog);
+		if(filename[strlen(filename) - 1] == 's' && filename[strlen(filename) - 2] == 'd' && filename[strlen(filename) - 3] == 'o' && filename[strlen(filename) - 4] == '.')
+			printf("File extension is valid(.ods)\n");
+		else {
+			printf("WARNING : Filename does not contain .ods\nWARNING : This may lead to unexpected output\nWARNING : Please open another file !\n");
+			displayMessage(sheet, "Fileextension in not ods ! This may lead to unexpected behaviour ! Please open another file !");
+		}
+		addGridFromODSFile(sheet, filename);
+		displayMessage(sheet, "Selected file is now open in editor");
+	}
+	else {
+		displayMessage(sheet, "You already have one file open in the editor !");
+	}
+	gtk_widget_show_all(window);
+}
+void openClicked(GtkWidget *widget, gpointer data) {
+	static char *filename = NULL;
+	Spreadsheet *sheet = (Spreadsheet *)data;
+	GtkWidget *dialog;
+	GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+	gint res;
+	if(filename == NULL) {
+		dialog = gtk_file_chooser_dialog_new ("Open File", GTK_WINDOW(window), action, "Cancel", GTK_RESPONSE_CANCEL, "Open", GTK_RESPONSE_ACCEPT, NULL);
+		res = gtk_dialog_run (GTK_DIALOG (dialog));
+		if (res == GTK_RESPONSE_ACCEPT) {
+			GtkFileChooser *chooser = GTK_FILE_CHOOSER (dialog);
+			filename = gtk_file_chooser_get_filename (chooser);
+		}
+		gtk_widget_destroy(dialog);
+		if(filename[strlen(filename) - 1] == 'v' && filename[strlen(filename) - 2] == 's' && filename[strlen(filename) - 3] == 'c' && filename[strlen(filename) - 4] == '.')
+			printf("File extension is valid(.csv)\n");
+		else {
+			printf("WARNING : Filename does not contain .csv\nWARNING : This may lead to unexpected output\nWARNING : Please open another file !\n");
+			displayMessage(sheet, "Fileextension in not csv ! This may lead to unexpected behaviour ! Please open another file !");
+		}
+		addGridFromCSVFile(sheet, filename);
+		displayMessage(sheet, "Selected file is now open in editor");
+	}
+	else {
+		displayMessage(sheet, "You already have one file open in the editor !");
+	}
+	gtk_widget_show_all(window);
+}
 void saveClicked(GtkWidget *widget, gpointer data) {
 	Spreadsheet *sheet = (Spreadsheet *)data;
 	GtkWidget *dialog;
@@ -209,7 +265,7 @@ void saveClicked(GtkWidget *widget, gpointer data) {
 	}
 	fp = fopen(filename, "w");
 	for(i = 0; i < sheet->max.row; i++) {
-		for(j = 0; j <= sheet->max.col; j++) {
+		for(j = 0; j < sheet->max.col; j++) {
 			label = gtk_button_get_label(GTK_BUTTON(gtk_grid_get_child_at(GTK_GRID(sheet->grid), j, i)));
 			for(k = 0, countofcomma = 0, countofquotes = 0; k < strlen(label); k++) {
 				if(label[k] == ',')
@@ -246,7 +302,7 @@ void saveClicked(GtkWidget *widget, gpointer data) {
 				puts(actual);
 			}
 			fprintf(fp, "%s", actual);
-			if(j == sheet->max.col)
+			if(j == sheet->max.col - 1)
 				fprintf(fp, "\n");
 			else
 				fprintf(fp, ",");
@@ -330,6 +386,8 @@ int main(int argc, char*argv[]) {
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "saveButton")), "clicked", G_CALLBACK(saveClicked), &sheet);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "deleteRow")), "clicked", G_CALLBACK(deleteRow), &sheet);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "deleteCol")), "clicked", G_CALLBACK(deleteCol), &sheet);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "openODSbutton")), "clicked", G_CALLBACK(openODSClicked), &sheet);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "openButton")), "clicked", G_CALLBACK(openClicked), &sheet);
 	if(argc > 1) {
 		if(argc > 2) {
 			printf("Unknown option %s\n", argv[1]);

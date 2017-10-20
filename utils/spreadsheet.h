@@ -25,5 +25,5 @@ GtkWidget *getFileView(Spreadsheet *sp);
 void addGridFromODSFile(Spreadsheet *sp, char *filename);
 void sortGrid(Spreadsheet *sp, int type);
 void displayMessage(Spreadsheet *sp, const char *msg);
-char *getAnswerFromFormula(Spreadsheet *sp, const char *formula);
+char *getAnswerFromFormula(const char *formula);
 #endif

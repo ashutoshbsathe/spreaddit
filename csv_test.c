@@ -157,10 +157,35 @@ void italicClicked(GtkWidget *widget, gpointer data) {
 }
 void applyClicked(GtkWidget *widget, gpointer data) {
 	const char *label;
+	char *actual;
+	int i, j;
 	Spreadsheet *tmp = (Spreadsheet *)data;
 	if(tmp->activecell != NULL) {
 		label = gtk_entry_get_text(tmp->formula);
-		if(strcasecmp(label, "=sort(ASC)") == 0 || strcasecmp(label, "= sort(ASC)") == 0) {
+		if(strlen(label) > 1 && label[0] == '"'&& label[1] == '=' && label[strlen(label) - 1] == '"') {
+			actual = (char *)malloc(strlen(label));
+			for(i = 0, j = 2; j <= strlen(label); i++, j++) {
+				if(j == strlen(label) - 1)
+					continue;
+				actual[i] = label[j];
+			}
+			actual[i] = '\0';
+			label = &actual[0];
+			gtk_button_set_label(GTK_BUTTON(tmp->activecell), label);
+		}
+		else if(strlen(label) > 0 && label[0] == '=') {
+			/*
+			 * It's formula man !!
+			 */
+			actual = getAnswerFromFormula(tmp, &label[1]);
+			if(actual == NULL) {
+				displayMessage(tmp, "Invalid syntax in formula ! Please check your formula again ! Also check if all cells contain valid integer data");
+				return;
+			}
+			label = &actual[0];
+			gtk_button_set_label(GTK_BUTTON(tmp->activecell), label);
+		}
+		else if(strcasecmp(label, "=sort(ASC)") == 0 || strcasecmp(label, "= sort(ASC)") == 0) {
 			sortGrid(tmp, ASC);
 			gtk_widget_show_all(window);
 		}

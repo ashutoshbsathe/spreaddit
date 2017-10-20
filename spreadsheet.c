@@ -6,6 +6,8 @@
 #include <fcntl.h>
 #include <errno.h>
 #include "spreadsheet.h"
+#include "utils/odsreader.h"
+#include "utils/expression.h"
 #define PERMS 0666
 #define YES 1
 #define NO  0
@@ -51,13 +53,42 @@ void displayMessage(Spreadsheet *sp, const char *msg) {
 	g_timeout_add_seconds(2.3, getSomeDelay, sp);
 }
 /*
+ * Returns a string for number num
+ * if num = 1
+ * it returns A
+ * if num = 2
+ * it returns B
+ * if num = 27
+ * it returns AA
+ * and so on
+ * Caller must free the memory
+ */
+char *string(int num) {
+	char *str = (char *)malloc(10); /* Can return up to length of 10 characters */
+	int i = 1, j;
+	for(j = 0; j < 10; j++)
+		str[j] = 'A';
+	if(num <= 0)
+		return NULL;
+	while(num > 1) {
+		str[i - 1]++;
+		if(str[i - 1] > 'Z') {
+			str[i - 1] = 'A';
+			i++;
+		}
+		num--;
+	}
+	str[i] = '\0';
+	return str;
+}
+/*
  * Cell focus and click handlers 
  */
 void cellClicked(GtkWidget *widget, gpointer data) {
 	Spreadsheet *tmp = (Spreadsheet *)data;
 	int i, j;
 	const char *label1, *label2;
-	char str[256];
+	char str[256], *tmpstr;
 	if(tmp->activecell == tmp->message) {
 		return;
 	}
@@ -73,7 +104,9 @@ void cellClicked(GtkWidget *widget, gpointer data) {
 	for(i = 0; i <= tmp->max.row; i++) {
 		for(j = 0; j <= tmp->max.col; j++) {
 			if(gtk_grid_get_child_at(GTK_GRID(tmp->grid), j, i) == tmp->activecell) {
-				sprintf(str, "Active cell coordinates are : (%d, %d)", i + 1, j + 1);
+				tmpstr = string(j + 1);
+				sprintf(str, "Active cell coordinates are : %s%d", tmpstr, i + 1);
+				free(tmpstr);
 				label2 = &str[0]; 
 				/* 
 				 * So now a constant character pointer points to str 
@@ -91,7 +124,7 @@ gboolean cellFocussed(GtkWidget *widget, GtkDirectionType direction, gpointer da
 	Spreadsheet *tmp = (Spreadsheet *)data;
 	int i, j;
 	const char *label1, *label2;
-	char str[256];
+	char str[256], *tmpstr;
 	if(tmp->activecell == tmp->message)
 		return FALSE;
 	label1 = gtk_button_get_label(GTK_BUTTON(widget));
@@ -106,7 +139,8 @@ gboolean cellFocussed(GtkWidget *widget, GtkDirectionType direction, gpointer da
 	for(i = 0; i <= tmp->max.row; i++) {
 		for(j = 0; j <= tmp->max.col; j++) {
 			if(gtk_grid_get_child_at(GTK_GRID(tmp->grid), j, i) == tmp->activecell) {
-				sprintf(str, "Active cell coordinates are : (%d, %d)", i + 1, j + 1);
+				tmpstr = string(j + 1);
+				sprintf(str, "Active cell coordinates are : %s%d", tmpstr, i + 1);
 				label2 = &str[0]; 
 				/* 
 				 * So now a constant character pointer points to str 
@@ -494,4 +528,59 @@ void sortGrid(Spreadsheet *sp, int type) {
 	sp->active.row = -1;
 	sp->active.col = -1;
 	return;
+}
+int infixeval(char *infix);
+char *getAnswerFromFormula(Spreadsheet *sp, const char *formula) {
+	char *infix = (char *)malloc(512);
+	char tmp[256];
+	const char *label;
+	GtkWidget *temp;
+	int restart = 1, i = 0, flag = 0, res;
+	formulatoken t;
+	strcpy(infix, "");
+	while(1) {
+		t = getnexttoken(formula, &restart);
+		flag = 0;
+		switch(t.type) {
+			case POS:
+				temp = gtk_grid_get_child_at(GTK_GRID(sp->grid), t.formuladata.position.col - 1, t.formuladata.position.row - 1);
+				label = gtk_button_get_label(GTK_BUTTON(temp));
+				for(i = 0; i < strlen(label); i++) {
+					if(label[i] < '0' || label[i] > '9') {
+						printf("Returning NULL & label[%d] = %c %d\n", i, label[i], label[i]);
+						displayMessage(sp, "Cell contains non integer data !!");
+						return NULL;
+					}
+				}
+				puts(label);
+				sprintf(tmp, "%s", label);
+				strcat(infix, tmp);
+				puts(infix);
+				break;
+			case INT :
+				sprintf(tmp, "%d", t.formuladata.num);
+				strcat(infix, tmp);
+				puts(infix);
+				break;
+			case OPR :
+				sprintf(tmp, "%c", t.formuladata.op);
+				strcat(infix, tmp);
+				puts(infix);
+				break;
+			case ENT :
+				flag = 1;
+				break;
+			case ERR :
+				flag = 1;
+				break;
+		}
+		if(flag)
+			break;
+	}
+	res = infixeval(infix);
+	if(res == INT_MIN)
+		return NULL;
+	strcpy(infix, "");
+	sprintf(infix, "%d", res);
+	return infix;
 }

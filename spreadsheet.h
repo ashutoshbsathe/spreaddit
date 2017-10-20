@@ -4,6 +4,7 @@ typedef struct pos {
 } pos;
 typedef struct spreadsheet {
 	GtkEntry *formula;
+	GtkBuilder *builder;
 	GtkStyleContext *context;
 	GtkWidget *scroll;
 	GtkWidget *activecell;
@@ -18,4 +19,5 @@ void addGridFromCSVFile(Spreadsheet *sp, char *filename);
 GtkWidget *getActiveCell(Spreadsheet *sp);
 GtkWidget *getFileView(Spreadsheet *sp);
 void addGridFromODSFile(Spreadsheet *sp, char *filename);
-void sortGrid(Spreadsheet *sp, int direction, int *read);
+void sortGrid(Spreadsheet *sp, int type);
+void displayMessage(Spreadsheet *sp, const char *msg);

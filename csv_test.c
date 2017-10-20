@@ -16,7 +16,7 @@ void insertrowbelowcell(GtkWidget *widget, gpointer data) {
 		return;
 	}
 	gtk_grid_insert_row(GTK_GRID(tmp->grid), tmp->active.row + 1);
-	for(i = 0; i <= tmp->max.col; i++) {
+	for(i = 0; i < tmp->max.col; i++) {
 		buf = gtk_button_new_with_label(" ");
 		tmp->context = gtk_widget_get_style_context(buf);
 		gtk_style_context_add_class(tmp->context, "cell");
@@ -24,6 +24,7 @@ void insertrowbelowcell(GtkWidget *widget, gpointer data) {
 		g_signal_connect(buf, "clicked", G_CALLBACK(cellClicked), tmp);
 		g_signal_connect(buf, "focus", G_CALLBACK(cellFocussed), tmp);
 	}
+	tmp->max.row++;
 	gtk_widget_show_all(window);
 	return;
 }
@@ -36,7 +37,7 @@ void insertrowabovecell(GtkWidget *widget, gpointer data) {
 		return;
 	}
 	gtk_grid_insert_row(GTK_GRID(tmp->grid), tmp->active.row );
-	for(i = 0; i <= tmp->max.col; i++) {
+	for(i = 0; i < tmp->max.col; i++) {
 		buf = gtk_button_new_with_label(" ");
 		tmp->context = gtk_widget_get_style_context(buf);
 		gtk_style_context_add_class(tmp->context, "cell");
@@ -44,6 +45,7 @@ void insertrowabovecell(GtkWidget *widget, gpointer data) {
 		g_signal_connect(buf, "clicked", G_CALLBACK(cellClicked), tmp);
 		g_signal_connect(buf, "focus", G_CALLBACK(cellFocussed), tmp);
 	}
+	tmp->max.row++;
 	tmp->active.row++;
 	cellClicked(tmp->activecell, tmp);
 	gtk_widget_show_all(window);
@@ -58,7 +60,7 @@ void insertcoltorightcell(GtkWidget *widget, gpointer data) {
 		return;
 	}
 	gtk_grid_insert_column(GTK_GRID(tmp->grid), tmp->active.col + 1);
-	for(i = 0; i <= tmp->max.row; i++) {
+	for(i = 0; i < tmp->max.row; i++) {
 		buf = gtk_button_new_with_label(" ");
 		tmp->context = gtk_widget_get_style_context(buf);
 		gtk_style_context_add_class(tmp->context, "cell");
@@ -66,6 +68,7 @@ void insertcoltorightcell(GtkWidget *widget, gpointer data) {
 		g_signal_connect(buf, "clicked", G_CALLBACK(cellClicked), tmp);
 		g_signal_connect(buf, "focus", G_CALLBACK(cellFocussed), tmp);
 	}
+	tmp->max.col++;
 	gtk_widget_show_all(window);
 	return;
 }
@@ -78,7 +81,7 @@ void insertcoltoleftcell(GtkWidget *widget, gpointer data) {
 		return;
 	}
 	gtk_grid_insert_column(GTK_GRID(tmp->grid), tmp->active.col);
-	for(i = 0; i <= tmp->max.row; i++) {
+	for(i = 0; i < tmp->max.row; i++) {
 		buf = gtk_button_new_with_label(" ");
 		tmp->context = gtk_widget_get_style_context(buf);
 		gtk_style_context_add_class(tmp->context, "cell");
@@ -86,6 +89,7 @@ void insertcoltoleftcell(GtkWidget *widget, gpointer data) {
 		g_signal_connect(buf, "clicked", G_CALLBACK(cellClicked), tmp);
 		g_signal_connect(buf, "focus", G_CALLBACK(cellFocussed), tmp);
 	}
+	tmp->max.col++;
 	tmp->active.col++;
 	cellClicked(tmp->activecell, tmp);
 	gtk_widget_show_all(window);
@@ -163,9 +167,32 @@ void applyClicked(GtkWidget *widget, gpointer data) {
 }
 void saveClicked(GtkWidget *widget, gpointer data) {
 	Spreadsheet *sheet = (Spreadsheet *)data;
-	int read = 0;
-	sortGrid(sheet, 1002, &read);
+	sortGrid(sheet, 1000);
 	gtk_widget_show_all(window);
+}
+void deleteRow(GtkWidget *widget, gpointer data) {
+	Spreadsheet *sheet = (Spreadsheet *)data;
+	if(sheet->max.row <= 1) {
+		displayMessage(sheet, "Cannot delete last row !!");
+		return;
+	}
+	gtk_grid_remove_row(GTK_GRID(sheet->grid), sheet->active.row);
+	sheet->activecell = sheet->message;
+	displayMessage(sheet, "Successfully deleted the row");
+	sheet->max.row--;
+	return;
+}
+void deleteCol(GtkWidget *widget, gpointer data) {
+	Spreadsheet *sheet = (Spreadsheet *)data;
+	if(sheet->max.col <= 1) {
+		displayMessage(sheet, "Cannot delete last column !!");
+		return;
+	}
+	gtk_grid_remove_column(GTK_GRID(sheet->grid), sheet->active.col);
+	sheet->activecell = sheet->message;
+	displayMessage(sheet, "Successfully deleted the column");
+	sheet->max.col--;
+	return;
 }
 int main(int argc, char*argv[]) {
 	GtkCssProvider *provider;
@@ -174,10 +201,6 @@ int main(int argc, char*argv[]) {
 	GtkWidget *tmp;
 	GError *error = NULL;
 	Spreadsheet sheet;
-	if(argc != 2) {
-		printf("Usage : ./spreaddit <FileName>\n");
-		return EINVAL;
-	}
 	gtk_init(&argc, &argv);
 	provider = gtk_css_provider_new();
 	gtk_css_provider_load_from_file(provider, g_file_new_for_path("res/styles/styles.css"), &error);
@@ -188,8 +211,6 @@ int main(int argc, char*argv[]) {
 	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	init(&sheet, builder);
-	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "boldButton")), "clicked", G_CALLBACK(boldClicked), &sheet);
-	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "italicButton")), "clicked", G_CALLBACK(italicClicked), &sheet);
 	//addGridFromCSVFile(&sheet, argv[1]);
 	addGridFromODSFile(&sheet, argv[1]);
 	context = gtk_widget_get_style_context(window);
@@ -220,6 +241,24 @@ int main(int argc, char*argv[]) {
 	gtk_style_context_add_class(context, "tool-button");
 	g_signal_connect(tmp, "clicked", G_CALLBACK(insertcoltoleftcell), &sheet);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "saveButton")), "clicked", G_CALLBACK(saveClicked), &sheet);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "deleteRow")), "clicked", G_CALLBACK(deleteRow), &sheet);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "deleteCol")), "clicked", G_CALLBACK(deleteCol), &sheet);
+	if(argc > 1) {
+		if(argc > 2) {
+			printf("Unknown option %s\n", argv[1]);
+			return EINVAL;
+		}
+		if(argv[1][strlen(argv[1]) - 1] == 's' && argv[1][strlen(argv[1]) - 2] == 'd' && argv[1][strlen(argv[1]) - 3] == 'o' && argv[1][strlen(argv[1]) - 4] == '.')
+			addGridFromODSFile(&sheet, argv[1]);
+		else if(argv[1][strlen(argv[1]) - 1] == 'v' && argv[1][strlen(argv[1]) - 2] == 's' && argv[1][strlen(argv[1]) - 3] == 'c' && argv[1][strlen(argv[1]) - 4] == '.')
+			addGridFromCSVFile(&sheet, argv[1]);
+		else {
+			printf("Unknown file format for %s\n", argv[1]);
+			displayMessage(&sheet, "Unknown file format");
+		}
+	}
+	else
+		displayMessage(&sheet, "Click on open button to open a file");
 	gtk_widget_show_all(window);
 	gtk_main();
 	return 0;

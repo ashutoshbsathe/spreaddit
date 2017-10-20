@@ -22,7 +22,7 @@ void init(Spreadsheet *sp, GtkBuilder *builder){
 	sp->message = GTK_WIDGET(gtk_builder_get_object(builder, "messageHolder"));
 	sp->grid = gtk_grid_new();
 	sp->active.row = sp->active.col = sp->max.col = sp->max.row = -1;
-	printf("Successfully Initialised Spreadsheet\n");
+	sp->builder = builder; /* Saving a copy of builder with structure since we need it afterwards */
 }
 gboolean getSomeDelay(gpointer data) {
 	static short calls = 0;
@@ -261,17 +261,13 @@ void addGridFromODSFile(Spreadsheet *sp, char *filename){
 			sp->context = gtk_widget_get_style_context(buf);
 			gtk_style_context_add_class(sp->context, "cell");
 			gtk_grid_attach(GTK_GRID(sp->grid), buf, col, row, 1, 1);
-			printf("%s", str);
 			g_signal_connect(buf, "clicked", G_CALLBACK(cellClicked), sp);
 			g_signal_connect(buf, "focus", G_CALLBACK(cellFocussed), sp);
 			col++;
 			if(col >= maxcol) {
 				col = 0;
-				printf("\n");
 				row++;
 			}
-			else
-				printf(",");
 			i = -1;/* Sp after incrementing it outside the if makes it zero */
 		}
 		i++;
@@ -316,29 +312,60 @@ int comparerows (const void *one, const void *two) {
 		ret = strcmp(a[i].data.label, b[i].data.label);
 	return ret;
 }
+int comparerowsdesc (const void *one, const void *two) {
+	node **p = (node **)one;
+	node **q = (node **)two;
+	node *a = (node *)(*p);
+	node *b = (node *)(*q);
+	int ret = 0;
+	int i = 0;
+	while(a[i].type != ACTVNUM && a[i].type != ACTVSTR)
+		i++;
+	if(a[i].type == ACTVNUM)
+		ret = a[i].data.num - b[i].data.num;
+	else
+		ret = strcmp(a[i].data.label, b[i].data.label);
+	ret = 0 - ret;
+	return ret;
+}
 char *floatttoarr(double num) {
 	char *buf = (char *)malloc(64);
-	sprintf(buf, "%lf", num);
+	int part1 = num;
+	double diff = num - part1;
+	if(diff != 0)
+		sprintf(buf, "%lf", num);
+	else
+		sprintf(buf, "%d", part1);
 	return buf;
 }
 void boldClicked(GtkWidget *widget, gpointer data);
 void italicClicked(GtkWidget *widget, gpointer data);
-void sortGrid(Spreadsheet *sp, int type, int *read) {
+void sortGrid(Spreadsheet *sp, int type) {
 	node **arr = NULL;
 	GtkWidget *tmp, *grid;
-	int i, j, flag = 0, num, count = 0;
+	int i, j, flag = 0, count = 0;
+	double num;
 	GList *children, *iter;
 	const char *label;
-	
-	arr = (node **)malloc(sizeof(node *) * sp->max.row);
+	/*
+	count = (int *)malloc(sizeof(int) * (sp->max.row - sp->active.row));
+	if(count == NULL) {
+		displayMessage(sp, "Sufficient memory is not available for sorting");
+	}*/
+	arr = (node **)malloc(sizeof(node *) * (sp->max.row - sp->active.row));
 	if(arr == NULL) {
 		displayMessage(sp, "Sufficient memory is not available for sorting");
+		return;
 	}
-	printf("Inside the sortGrid\n");
-	for(i = 0; i < sp->max.row; i++) {
+	printf("What I read ? \\/\n");
+	for(i = 0; i < (sp->max.row - sp->active.row); i++) {
 		arr[i] = (node *)malloc(sizeof(node) * sp->max.col);
+		if(arr == NULL) {
+			displayMessage(sp, "Sufficient memory is not available for sorting");
+			return;
+		}
 		for(j = 0; j < sp->max.col; j++) {
-			tmp = gtk_grid_get_child_at(GTK_GRID(sp->grid), j, i);
+			tmp = gtk_grid_get_child_at(GTK_GRID(sp->grid), j, i + sp->active.row);
 			arr[i][j].data.label = gtk_button_get_label(GTK_BUTTON(tmp));
 			sp->context = gtk_widget_get_style_context(tmp);
 			if(gtk_style_context_has_class(sp->context, "bold") == TRUE) {
@@ -351,18 +378,24 @@ void sortGrid(Spreadsheet *sp, int type, int *read) {
 			else
 				arr[i][j].italic = NO;
 			arr[i][j].type = STR;
+			printf("%s", arr[i][j].data.label);
+			if(j == sp->max.col - 1)
+				printf("\n");
+			else
+				printf(",");
 		}
 	}
+	printf("-------------------------------------------------\nWhat Process ? \\/\n");
 	/*
 	 * Checking of all the members of the active column are numeric strings
 	 */
-	for(i = 0; i < sp->max.row; i++) {
+	for(i = 0; i < (sp->max.row - sp->active.row); i++) {
 		if(strcmp(arr[i][sp->active.col].data.label, " ") == 0) {
 			displayMessage(sp, "Cannot sort the column with empty cells");
 			return;
 		}
 	}
-	for(i = 0; i < sp->max.row; i++) {
+	for(i = 0; i < (sp->max.row - sp->active.row); i++) {
 		j = 0;
 		if(arr[i][sp->active.col].data.label[j] == '-')
 			j++;
@@ -373,68 +406,92 @@ void sortGrid(Spreadsheet *sp, int type, int *read) {
 				j++;
 				count++;
 			}
-			if(arr[i][sp->active.col].data.label[j] < '0' || arr[i][sp->active.col].data.label[j] > '9') {
+			if(arr[i][sp->active.col].data.label[j] < '0' || arr[i][sp->active.col].data.label[j] > '9' || count > 1) {
 				flag = 1;
 				break;
 			}
-			if(count)
-				count++;
 		}
 		if(flag == 1)
 			break;
 	}
 	if(flag == 0) {
-		for(i = 0; i < sp->max.row; i++) {
-			num = atoi(arr[i][sp->active.col].data.label);
-			while(count > 0)
-				num = num / 10.0;
+		for(i = 0; i < (sp->max.row - sp->active.row); i++) {
+			num = atof(arr[i][sp->active.col].data.label);
+			printf("num = %lf\n", num);
 			arr[i][sp->active.col].data.num = num;
 			arr[i][sp->active.col].type = ACTVNUM;
 		}
 	}
 	else {
-		for(i = 0; i < sp->max.row; i++) {
+		for(i = 0; i < (sp->max.row - sp->active.row); i++) {
 			arr[i][sp->active.col].type = ACTVSTR;
 		}
 	}
-	qsort(arr, sp->max.row, sizeof(arr[0]),  comparerows);
+	if(type == ASC)
+		qsort(arr, sp->max.row - sp->active.row, sizeof(arr[0]), comparerows);
+	else
+		qsort(arr, sp->max.row - sp->active.row, sizeof(arr[0]), comparerowsdesc);
+	printf("-------------------------------------------------\nWhat I get ? \\/\n");
 	grid = gtk_grid_new();
-	for(i = 0; i < sp->max.row; i++) {
+	for(i = 0; i < sp->active.row; i++) {
 		for(j = 0; j < sp->max.col; j++) {
-			/*
-			if(arr[i][j].type == ACTVNUM)
-				printf("%d", arr[i][j].data.num);
-			else
-				printf("%s", arr[i][j].data.label);
-			if(j == sp->max.col - 1)
-				printf("\n");
-			else
-				printf(",");
-			*/
-			if(arr[i][j].type == ACTVNUM) 
-				label = floatttoarr(arr[i][j].data.num);
-			else
-				label = arr[i][j].data.label;
-			tmp = gtk_button_new_with_label(label);
+			tmp = gtk_button_new_with_label(gtk_button_get_label(GTK_BUTTON(gtk_grid_get_child_at(GTK_GRID(sp->grid), j, i))));
 			sp->context = gtk_widget_get_style_context(tmp);
 			gtk_style_context_add_class(sp->context, "cell");
-			if(arr[i][j].bold == YES) {
-				boldClicked(tmp, sp);
+			sp->context = gtk_widget_get_style_context(gtk_grid_get_child_at(GTK_GRID(sp->grid), j, i));
+			if(gtk_style_context_has_class(sp->context, "bold") == TRUE) {
+				sp->activecell = tmp;
+				boldClicked(GTK_WIDGET(gtk_builder_get_object(sp->builder, "boldButton")), sp);
 			}
-			if(arr[i][j].italic == YES)
-				italicClicked(tmp, sp);
+			if(gtk_style_context_has_class(sp->context, "italic") == TRUE) {
+				sp->activecell = tmp;
+				italicClicked(GTK_WIDGET(gtk_builder_get_object(sp->builder, "italicButton")), sp);
+			}
 			gtk_grid_attach(GTK_GRID(grid), tmp, j, i, 1, 1);
 			g_signal_connect(tmp, "clicked", G_CALLBACK(cellClicked), sp);
 			g_signal_connect(tmp, "focus", G_CALLBACK(cellFocussed), sp);
 		}
 	}
+	for(i = 0; i < sp->max.row - sp->active.row; i++) {
+		for(j = 0; j < sp->max.col; j++) {
+			if(arr[i][j].type == ACTVNUM) 
+				label = floatttoarr(arr[i][j].data.num);
+			else
+				label = arr[i][j].data.label;
+			printf("%s", label);
+			if(j == sp->max.col - 1)
+				printf("\n");
+			else
+				printf(",");
+			tmp = gtk_button_new_with_label(label);
+			sp->context = gtk_widget_get_style_context(tmp);
+			gtk_style_context_add_class(sp->context, "cell");
+			if(arr[i][j].bold == YES) {
+				sp->activecell = tmp;
+				boldClicked(GTK_WIDGET(gtk_builder_get_object(sp->builder, "boldButton")), sp);
+			}
+			if(arr[i][j].italic == YES) {
+				sp->activecell = tmp;
+				italicClicked(GTK_WIDGET(gtk_builder_get_object(sp->builder, "italicButton")), sp);
+			}
+			gtk_grid_attach(GTK_GRID(grid), tmp, j, i + sp->active.row, 1, 1);
+			g_signal_connect(tmp, "clicked", G_CALLBACK(cellClicked), sp);
+			g_signal_connect(tmp, "focus", G_CALLBACK(cellFocussed), sp);
+		}
+	}
+	printf("-------------------------------------------------\nSo far so good man \\/\n");
 	sp->activecell = NULL;
-	sp->active.row = -1;
-	sp->active.col = -1;
 	children = gtk_container_get_children(GTK_CONTAINER(sp->scroll));
 	for(iter = children; iter != NULL; iter = g_list_next(iter))
-		  gtk_widget_destroy(GTK_WIDGET(iter->data));
+		gtk_widget_destroy(GTK_WIDGET(iter->data));
 	g_list_free(children);
 	sp->grid = grid;
 	gtk_container_add(GTK_CONTAINER(sp->scroll), sp->grid);
+	printf("-------------------------------------------------\nFreeing the memory now \\/\n");
+	for(i = 0; i < sp->max.row - sp->active.row; i++)
+		free(arr[i]);
+	free(arr);
+	sp->active.row = -1;
+	sp->active.col = -1;
+	return;
 }

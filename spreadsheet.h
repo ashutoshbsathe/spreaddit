@@ -1,3 +1,5 @@
+#define ASC  1000
+#define DESC 1001
 typedef struct pos {
 	int row;
 	int col;

@@ -100,7 +100,7 @@ void boldClicked(GtkWidget *widget, gpointer data) {
 	Spreadsheet *sheet = (Spreadsheet *)data;
 	GtkWidget *label;
 	if(sheet->activecell == NULL) {
-		gtk_label_set_text(GTK_LABEL(sheet->message), "Please select a cell before making changes !\n");
+		displayMessage(sheet, "Please select a cell before making changes !");
 		return;
 	}
 	sheet->context = gtk_widget_get_style_context(sheet->activecell);
@@ -130,7 +130,7 @@ void italicClicked(GtkWidget *widget, gpointer data) {
 	Spreadsheet *sheet = (Spreadsheet *)data;
 	GtkWidget *label;
 	if(sheet->activecell == NULL) {
-		gtk_label_set_text(GTK_LABEL(sheet->message), "Please select a cell before making changes !");
+		displayMessage(sheet, "Please select a cell before making changes !");
 		return;
 	}
 	sheet->context = gtk_widget_get_style_context(sheet->activecell);
@@ -160,15 +160,102 @@ void applyClicked(GtkWidget *widget, gpointer data) {
 	Spreadsheet *tmp = (Spreadsheet *)data;
 	if(tmp->activecell != NULL) {
 		label = gtk_entry_get_text(tmp->formula);
-		gtk_button_set_label(GTK_BUTTON(tmp->activecell), label);
+		if(strcasecmp(label, "=sort(ASC)") == 0 || strcasecmp(label, "= sort(ASC)") == 0) {
+			sortGrid(tmp, ASC);
+			gtk_widget_show_all(window);
+		}
+		else if (strcasecmp(label, "=sort(DESC)") == 0) {
+			sortGrid(tmp, DESC);
+			gtk_widget_show_all(window);
+		}
+		else if(label[0] == '=') {
+			displayMessage(tmp, "Invalid syntax in formula ! Please check your formula again !");
+		}
+		else
+			gtk_button_set_label(GTK_BUTTON(tmp->activecell), label);
 	}
 	else
-		gtk_label_set_text(GTK_LABEL(tmp->message), "Please select a cell before applying changes !");
+		displayMessage(tmp, "Please select a cell before applying changes !");
 }
 void saveClicked(GtkWidget *widget, gpointer data) {
 	Spreadsheet *sheet = (Spreadsheet *)data;
-	sortGrid(sheet, 1000);
-	gtk_widget_show_all(window);
+	GtkWidget *dialog;
+	GtkFileChooser *chooser;
+	FILE *fp;
+	GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
+	gint res;
+	unsigned int i, j, k, l, countofcomma = 0, countofquotes = 0;
+	static char *filename = NULL;
+	const char *label;
+	char *actual;
+	dialog = gtk_file_chooser_dialog_new("Save File", GTK_WINDOW(window), action, "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL);
+	chooser = GTK_FILE_CHOOSER(dialog);
+	gtk_file_chooser_set_do_overwrite_confirmation(chooser, TRUE);
+	gtk_file_chooser_set_filename(chooser, "Untitled document");
+	if(filename == NULL) {
+		res = gtk_dialog_run(GTK_DIALOG(dialog));
+		if(res == GTK_RESPONSE_ACCEPT) {
+			filename = gtk_file_chooser_get_filename(chooser);
+			printf("I get filename as %s\n", filename);
+		}
+	
+		gtk_widget_destroy(dialog);
+		if(filename[strlen(filename) - 1] == 'v' && filename[strlen(filename) - 2] == 's' && filename[strlen(filename) - 3] == 'c' && filename[strlen(filename) - 4] == '.')
+			printf("Saving as .csv\n");
+		else {
+			strcat(filename, ".csv");
+			printf("Filename does not contain .csv ...\nAdding .csv to filename...\n");
+		}
+	}
+	fp = fopen(filename, "w");
+	for(i = 0; i < sheet->max.row; i++) {
+		for(j = 0; j <= sheet->max.col; j++) {
+			label = gtk_button_get_label(GTK_BUTTON(gtk_grid_get_child_at(GTK_GRID(sheet->grid), j, i)));
+			for(k = 0, countofcomma = 0, countofquotes = 0; k < strlen(label); k++) {
+				if(label[k] == ',')
+					countofcomma++;
+				if(label[k] == '"')
+					countofquotes++;
+			}
+			if(countofcomma == 0 && countofquotes == 0) {
+				actual = (char *)malloc(strlen(label) + 1);
+				strcpy(actual, label);
+				puts(actual);
+			}
+			else {
+				/*
+				 * 1 for storing NUL character
+				 * 2 for forward and backward double quotes
+				 * each double quote will be replaced with double double quotes so they ac as text delimiters
+				 */
+				actual = (char *)malloc(strlen(label) + countofquotes + 3);
+				strcpy(actual, "\"");
+				strcat(actual, label);
+				strcat(actual, "\"");
+				for(k = 1; k < strlen(label); k++) {
+					if(actual[k] == '"') {
+						/*
+						 * Shift the string one unit forward
+						 */
+						for(l = k; actual[l] != '\0'; l++);
+						for(l = l + 1; l > k; l--)
+							actual[l] = actual[l - 1];
+						k = k + 2;
+					}
+				}
+				puts(actual);
+			}
+			fprintf(fp, "%s", actual);
+			if(j == sheet->max.col)
+				fprintf(fp, "\n");
+			else
+				fprintf(fp, ",");
+			free(actual);
+		}
+	}
+	fclose(fp);
+	displayMessage(sheet, "Successfully saved the file !");
+	return;
 }
 void deleteRow(GtkWidget *widget, gpointer data) {
 	Spreadsheet *sheet = (Spreadsheet *)data;

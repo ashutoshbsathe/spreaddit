@@ -284,7 +284,7 @@ void addGridFromODSFile(Spreadsheet *sp, char *filename){
  * type = ASC / DES (Ascending / Descending)
  */
 #define ASC     1000
-#define DES     1001
+#define DESC    1001
 #define ACTVSTR 200
 #define ACTVNUM 201
 #define STR     202

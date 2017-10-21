@@ -5,6 +5,7 @@
 #include <string.h>
 #include <errno.h>
 #include <gtk/gtk.h>
+#include <gdk/gdk.h>
 #include "spreadsheet.h"
 GtkWidget *window;
 void insertrowbelowcell(GtkWidget *widget, gpointer data) {
@@ -365,6 +366,31 @@ void deleteCol(GtkWidget *widget, gpointer data) {
 	sheet->max.col--;
 	return;
 }
+gboolean keyPressHandler(GtkWidget *widget, GdkEventKey *event, gpointer data) {
+	Spreadsheet *sp = (Spreadsheet *)data;
+	static const char *label = NULL;
+	switch(event->keyval) {
+		case GDK_KEY_c : 
+			if(sp->activecell == NULL)
+				displayMessage(sp, "Please select a cell before attempting to copy the content");
+			else {
+				gtk_label_set_text(GTK_LABEL(sp->message), "Copied the contents of the current cell");
+				label = gtk_button_get_label(GTK_BUTTON(sp->activecell));
+			}
+			break;
+		case GDK_KEY_v : 
+			if(label == NULL)
+				displayMessage(sp, "Please select a cell and press Ctrl + C to copy it's content");
+			else if (sp->activecell == NULL)
+				displayMessage(sp, "Please select a cell before attempting to paste the data");
+			else
+				gtk_button_set_label(GTK_BUTTON(sp->activecell), label);
+			break;
+		default    :
+			break;
+	}
+	return FALSE;
+}
 int main(int argc, char*argv[]) {
 	GtkCssProvider *provider;
 	GtkStyleContext *context;
@@ -433,6 +459,7 @@ int main(int argc, char*argv[]) {
 	}
 	else
 		displayMessage(&sheet, "Click on open button to open a file");
+	g_signal_connect(window, "key-release-event", G_CALLBACK(keyPressHandler), &sheet);
 	gtk_widget_show_all(window);
 	gtk_main();
 	return 0;

@@ -1,3 +1,5 @@
+#ifndef __EXPRESSION_H
+#define __EXPRESSION_H
 #include <gtk/gtk.h>
 #include <string.h>
 #include "spreadsheet.h"
@@ -15,3 +17,4 @@ typedef struct formulatoken {
 	} formuladata;
 }formulatoken;
 formulatoken getnexttoken(const char *formula, int *restart);
+#endif

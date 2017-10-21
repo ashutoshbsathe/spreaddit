@@ -1,3 +1,5 @@
+#ifndef __CSTACK_H
+#define __CSTACK_H
 #include <stdlib.h>
 typedef struct cnode{
 	char val;
@@ -9,4 +11,4 @@ int cisfull(cstack *s);
 void cinit(cstack *s);
 void cpush(cstack *s, char x);
 char cpop(cstack *s);
-
+#endif

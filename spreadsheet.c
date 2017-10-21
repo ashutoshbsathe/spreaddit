@@ -310,6 +310,7 @@ void addGridFromODSFile(Spreadsheet *sp, char *filename){
 	sp->max.row = row;
 	gtk_container_add(GTK_CONTAINER(sp->scroll), sp->grid);
 	fclose(fp);
+	remove("utils/data");
 	return ;
 }
 /*

@@ -162,6 +162,8 @@ void applyClicked(GtkWidget *widget, gpointer data) {
 	Spreadsheet *tmp = (Spreadsheet *)data;
 	if(tmp->activecell != NULL) {
 		label = gtk_entry_get_text(tmp->formula);
+		if(label[0] == ' ' )
+			label = &label[1];
 		if(strcasecmp(label, "=sort(ASC)") == 0 || strcasecmp(label, "= sort(ASC)") == 0) {
 			sortGrid(tmp, ASC);
 			gtk_widget_show_all(window);
@@ -185,6 +187,7 @@ void applyClicked(GtkWidget *widget, gpointer data) {
 			/*
 			 * It's formula man !!
 			 */
+			printf("Getting answer from formula\n");
 			actual = getAnswerFromFormula(tmp, &label[1]);
 			if(actual == NULL) {
 				displayMessage(tmp, "Invalid syntax in formula ! Please check your formula again ! Also check if all cells contain valid integer data");

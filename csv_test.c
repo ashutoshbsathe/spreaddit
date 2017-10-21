@@ -392,6 +392,7 @@ int main(int argc, char*argv[]) {
 	gtk_style_context_add_class(context, "formatting-button");
 	g_signal_connect(tmp, "clicked", G_CALLBACK(italicClicked), &sheet);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "applyButton")), "clicked", G_CALLBACK(applyClicked), &sheet);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "formulaEntry")), "activate", G_CALLBACK(applyClicked), &sheet);
 	tmp = GTK_WIDGET(gtk_builder_get_object(builder, "insertRowBelow"));
 	context = gtk_widget_get_style_context(tmp);
 	gtk_style_context_add_class(context, "tool-button");

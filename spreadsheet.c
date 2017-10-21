@@ -572,6 +572,8 @@ char *getAnswerFromFormula(Spreadsheet *sp, const char *formula) {
 				break;
 			case ERR :
 				flag = 1;
+				free(infix);
+				return NULL;
 				break;
 		}
 		if(flag)

@@ -162,7 +162,15 @@ void applyClicked(GtkWidget *widget, gpointer data) {
 	Spreadsheet *tmp = (Spreadsheet *)data;
 	if(tmp->activecell != NULL) {
 		label = gtk_entry_get_text(tmp->formula);
-		if(strlen(label) > 1 && label[0] == '"'&& label[1] == '=' && label[strlen(label) - 1] == '"') {
+		if(strcasecmp(label, "=sort(ASC)") == 0 || strcasecmp(label, "= sort(ASC)") == 0) {
+			sortGrid(tmp, ASC);
+			gtk_widget_show_all(window);
+		}
+		else if (strcasecmp(label, "=sort(DESC)") == 0) {
+			sortGrid(tmp, DESC);
+			gtk_widget_show_all(window);
+		}
+		else if(strlen(label) > 1 && label[0] == '"'&& label[1] == '=' && label[strlen(label) - 1] == '"') {
 			actual = (char *)malloc(strlen(label));
 			for(i = 0, j = 2; j <= strlen(label); i++, j++) {
 				if(j == strlen(label) - 1)
@@ -184,14 +192,6 @@ void applyClicked(GtkWidget *widget, gpointer data) {
 			}
 			label = &actual[0];
 			gtk_button_set_label(GTK_BUTTON(tmp->activecell), label);
-		}
-		else if(strcasecmp(label, "=sort(ASC)") == 0 || strcasecmp(label, "= sort(ASC)") == 0) {
-			sortGrid(tmp, ASC);
-			gtk_widget_show_all(window);
-		}
-		else if (strcasecmp(label, "=sort(DESC)") == 0) {
-			sortGrid(tmp, DESC);
-			gtk_widget_show_all(window);
 		}
 		else if(label[0] == '=') {
 			displayMessage(tmp, "Invalid syntax in formula ! Please check your formula again !");

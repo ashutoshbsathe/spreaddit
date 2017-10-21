@@ -392,7 +392,6 @@ void sortGrid(Spreadsheet *sp, int type) {
 		displayMessage(sp, "Sufficient memory is not available for sorting");
 		return;
 	}
-	printf("What I read ? \\/\n");
 	for(i = 0; i < (sp->max.row - sp->active.row); i++) {
 		arr[i] = (node *)malloc(sizeof(node) * sp->max.col);
 		if(arr == NULL) {
@@ -413,14 +412,8 @@ void sortGrid(Spreadsheet *sp, int type) {
 			else
 				arr[i][j].italic = NO;
 			arr[i][j].type = STR;
-			printf("%s", arr[i][j].data.label);
-			if(j == sp->max.col - 1)
-				printf("\n");
-			else
-				printf(",");
 		}
 	}
-	printf("-------------------------------------------------\nWhat Process ? \\/\n");
 	/*
 	 * Checking of all the members of the active column are numeric strings
 	 */
@@ -452,7 +445,6 @@ void sortGrid(Spreadsheet *sp, int type) {
 	if(flag == 0) {
 		for(i = 0; i < (sp->max.row - sp->active.row); i++) {
 			num = atof(arr[i][sp->active.col].data.label);
-			printf("num = %lf\n", num);
 			arr[i][sp->active.col].data.num = num;
 			arr[i][sp->active.col].type = ACTVNUM;
 		}
@@ -466,7 +458,6 @@ void sortGrid(Spreadsheet *sp, int type) {
 		qsort(arr, sp->max.row - sp->active.row, sizeof(arr[0]), comparerows);
 	else
 		qsort(arr, sp->max.row - sp->active.row, sizeof(arr[0]), comparerowsdesc);
-	printf("-------------------------------------------------\nWhat I get ? \\/\n");
 	grid = gtk_grid_new();
 	for(i = 0; i < sp->active.row; i++) {
 		for(j = 0; j < sp->max.col; j++) {
@@ -493,11 +484,6 @@ void sortGrid(Spreadsheet *sp, int type) {
 				label = floatttoarr(arr[i][j].data.num);
 			else
 				label = arr[i][j].data.label;
-			printf("%s", label);
-			if(j == sp->max.col - 1)
-				printf("\n");
-			else
-				printf(",");
 			tmp = gtk_button_new_with_label(label);
 			sp->context = gtk_widget_get_style_context(tmp);
 			gtk_style_context_add_class(sp->context, "cell");
@@ -514,7 +500,6 @@ void sortGrid(Spreadsheet *sp, int type) {
 			g_signal_connect(tmp, "focus", G_CALLBACK(cellFocussed), sp);
 		}
 	}
-	printf("-------------------------------------------------\nSo far so good man \\/\n");
 	sp->activecell = NULL;
 	children = gtk_container_get_children(GTK_CONTAINER(sp->scroll));
 	for(iter = children; iter != NULL; iter = g_list_next(iter))
@@ -522,7 +507,6 @@ void sortGrid(Spreadsheet *sp, int type) {
 	g_list_free(children);
 	sp->grid = grid;
 	gtk_container_add(GTK_CONTAINER(sp->scroll), sp->grid);
-	printf("-------------------------------------------------\nFreeing the memory now \\/\n");
 	for(i = 0; i < sp->max.row - sp->active.row; i++)
 		free(arr[i]);
 	free(arr);

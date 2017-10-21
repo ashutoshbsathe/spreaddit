@@ -382,30 +382,4 @@ int infixeval(char *infix) {
 	}
 	return INT_MIN;
 }
-/* infix evaluation without converting it to postfix
- * This is main function calling rest of the function
- * this is capable of handling brackets as well :
- * for eg. : 1 + 2 + ( 3 + 4 ) * 5
- * ans will be 38
- *
- * Please note that there should be spaces before and after every operator and operand (including brackets)
- */
-/*
-int main(int argc, char *argv[]) {
-	char line[128], *p;
-	int x, y;
-	while(x = readline(line, 128)) {
-		if(line != NULL) {
-			y = infixeval(line);
-			if(y != INT_MIN)
-				printf("%d\n", y);
-			else
-				fprintf(stderr, "Error in expression\n");
-		}
-		else
-			fprintf(stderr, "Error in expression\n");
-	}
-	//printf("%d\n", y);
-	return 0;
-}
-*/
+

@@ -329,7 +329,6 @@ void saveClicked(GtkWidget *widget, gpointer data) {
 						k = k + 2;
 					}
 				}
-				puts(actual);
 			}
 			fprintf(fp, "%s", actual);
 			if(j == sheet->max.col - 1)

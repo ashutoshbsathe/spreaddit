@@ -17,4 +17,8 @@ typedef struct formulatoken {
 	} formuladata;
 }formulatoken;
 formulatoken getnexttoken(const char *formula, int *restart);
+#define DDMMYYYY 50
+#define DD1MM1YYYY 53
+#define DMONTHYYYY 54
+char *formatdate(const char *str, int format);
 #endif

@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include "spreadsheet.h"
+#include "utils/expression.h"
 GtkWidget *window;
 void insertrowbelowcell(GtkWidget *widget, gpointer data) {
 	int i;
@@ -391,6 +392,54 @@ gboolean keyPressHandler(GtkWidget *widget, GdkEventKey *event, gpointer data) {
 	}
 	return FALSE;
 }
+void dateformat1(GtkWidget *widget, gpointer data) {
+	Spreadsheet *tmp = (Spreadsheet *)data;
+	const char *label = NULL;
+	if(tmp->activecell == NULL){
+		displayMessage(tmp, "Please select a cell before changing date format");
+		return;
+	}
+	label = formatdate(gtk_button_get_label(GTK_BUTTON(tmp->activecell)), DDMMYYYY);
+	if(label == NULL) {
+		displayMessage(tmp, "Selected cell does not contain a valid date string");
+		return;
+	}
+	gtk_button_set_label(GTK_BUTTON(tmp->activecell), label);
+	gtk_widget_show_all(window);
+	return;
+}
+void dateformat2(GtkWidget *widget, gpointer data) {
+	Spreadsheet *tmp = (Spreadsheet *)data;
+	const char *label = NULL;
+	if(tmp->activecell == NULL){
+		displayMessage(tmp, "Please select a cell before changing date format");
+		return;
+	}
+	label = formatdate(gtk_button_get_label(GTK_BUTTON(tmp->activecell)), DD1MM1YYYY);
+	if(label == NULL) {
+		displayMessage(tmp, "Selected cell does not contain a valid date string");
+		return;
+	}
+	gtk_button_set_label(GTK_BUTTON(tmp->activecell), label);
+	gtk_widget_show_all(window);
+	return;
+}
+void dateformat3(GtkWidget *widget, gpointer data) {
+	Spreadsheet *tmp = (Spreadsheet *)data;
+	const char *label = NULL;
+	if(tmp->activecell == NULL){
+		displayMessage(tmp, "Please select a cell before changing date format");
+		return;
+	}
+	label = formatdate(gtk_button_get_label(GTK_BUTTON(tmp->activecell)), DMONTHYYYY);
+	if(label == NULL) {
+		displayMessage(tmp, "Selected cell does not contain a valid date string");
+		return;
+	}
+	gtk_button_set_label(GTK_BUTTON(tmp->activecell), label);
+	gtk_widget_show_all(window);
+	return;
+}
 int main(int argc, char*argv[]) {
 	GtkCssProvider *provider;
 	GtkStyleContext *context;
@@ -443,6 +492,9 @@ int main(int argc, char*argv[]) {
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "deleteCol")), "clicked", G_CALLBACK(deleteCol), &sheet);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "openODSbutton")), "clicked", G_CALLBACK(openODSClicked), &sheet);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "openButton")), "clicked", G_CALLBACK(openClicked), &sheet);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "dateformat1")), "clicked", G_CALLBACK(dateformat1), &sheet);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "dateformat2")), "clicked", G_CALLBACK(dateformat2), &sheet);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "dateformat3")), "clicked", G_CALLBACK(dateformat3), &sheet);
 	if(argc > 1) {
 		if(argc > 2) {
 			printf("Unknown option %s\n", argv[1]);
@@ -460,6 +512,7 @@ int main(int argc, char*argv[]) {
 	else
 		displayMessage(&sheet, "Click on open button to open a file");
 	g_signal_connect(window, "key-release-event", G_CALLBACK(keyPressHandler), &sheet);
+	printf("%s", formatdate("20-02-1999", 50));
 	gtk_widget_show_all(window);
 	gtk_main();
 	return 0;

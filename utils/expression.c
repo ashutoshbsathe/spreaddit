@@ -1,5 +1,6 @@
 #include <limits.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #define POS 300
 #define INT 400
@@ -328,5 +329,161 @@ formulatoken getnexttoken(const char *formula, int *restart) {
 		}
 		currstate = nextstate;
 		i++;
+	}
+}
+#define DDMMYYYY 50
+#define DD1MM1YYYY 53
+#define DMONTHYYYY 54
+char *formatdate(const char *str, int format) {
+	char *input = (char *)malloc(strlen(str) + 1);
+	strcpy(input, str);
+	char tmp[5];
+	char *tmp2;
+	char months[12][5] = {"Jan.", "Feb.", "Mar.", "Apr.", "May.", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."};
+	int i, j, sum, currformat;
+	for(i = 0; i < strlen(input); i++) {
+		if(input[i] == ' ') {
+			for(j = i + 1; j <= strlen(input); j++)
+				input[j - 1] = input[j];
+		}
+	}
+	puts(input);
+	if(strlen(input) < 10) {
+		free(input);
+		return NULL;
+	}
+	sum = (input[0] - '0') * 10 + (input[1] - '0');
+	if(sum < 1 || sum > 31) {
+		printf("Returning cuz date invalid\n");
+		free(input);
+		return NULL;
+	}
+	if(input[2] == '/' || input[2] == '-') {
+		if(input[2] == '/')
+			currformat = DDMMYYYY;
+		else
+			currformat = DD1MM1YYYY;
+		sum = (input[3] - '0') * 10 + (input[4] - '0');
+		if(sum < 1 || sum > 12) {
+			free(input);
+			printf("Returning cus month invalid\n");
+			return NULL;
+		}
+	}
+	else {
+		currformat = DMONTHYYYY;
+		for(i = 0; i < 4; i++)
+			tmp[i] = input[i + 2];
+		puts(tmp);
+		for(i = 0; i < 12; i++) {
+			if(strcasecmp(tmp, months[i]) == 0)
+				break;
+		}
+		if(i == 12) {
+			free(input);
+			printf("Returning cuz i = 12\n");
+			return NULL;
+		}
+		else
+			sum = i;
+	}
+	for(i = 6; i < 10; i++) {
+		if(input[i] < '0' || input[i] > '9') {
+			free(input);
+			return NULL;
+		}
+	}
+	/*
+	 * So the string is now nicely formatted
+	 */
+	switch(format) {
+		case DDMMYYYY: 
+			if(currformat == DDMMYYYY)
+				 return input;
+			else if(currformat == DD1MM1YYYY) {
+				input[2] = '/';
+				input[5] = '/';
+				return input;
+			}
+			else {
+				printf("%d\n", sum);
+				tmp2 = (char *)malloc(10);
+				tmp2[0] = input[0];
+				tmp2[1] = input[1];
+				tmp2[2] = '/';
+				tmp2[3] = '0' + ((sum + 1) / 10);
+				tmp2[4] = '0' + ((sum + 1) % 10);
+				tmp2[5] = '/';
+				tmp2[6] = input[6];
+				tmp2[7] = input[7];
+				tmp2[8] = input[8];
+				tmp2[9] = input[9];
+				tmp2[10] = '\0';
+				free(input);
+				return tmp2;
+			}
+			break;
+		case DD1MM1YYYY:
+			if(currformat == DDMMYYYY) {
+				input[2] = '-';
+				input[5] = '-';
+				return input;
+			}
+			else if(currformat == DD1MM1YYYY)
+				return input;
+			else {
+				tmp2 = (char *)malloc(10);
+				tmp2[0] = input[0];
+				tmp2[1] = input[1];
+				tmp2[2] = '-';
+				tmp2[3] = '0' + ((sum + 1) / 10);
+				tmp2[4] = '0' + ((sum + 1) % 10);
+				tmp2[5] = '-';
+				tmp2[6] = input[6];
+				tmp2[7] = input[7];
+				tmp2[8] = input[8];
+				tmp2[9] = input[9];
+				tmp2[10] = '\0';
+				free(input);
+				return tmp2;
+			}
+		case DMONTHYYYY:
+			if(currformat == DDMMYYYY) {
+				tmp2 = (char *)malloc(12);
+				tmp2[0] = input[0];
+				tmp2[1] = input[1];
+				tmp2[2] = ' ';
+				tmp2[3] = '\0';
+				strcat(tmp2, months[sum - 1]);
+				tmp2[7] = ' ';
+				tmp2[8] = input[6];
+				tmp2[9] = input[7];
+				tmp2[10] = input[8];
+				tmp2[11] = input[9];
+				tmp2[12] = '\0';
+				free(input);
+				return tmp2;
+			}
+			else if(currformat == DD1MM1YYYY) {
+				tmp2 = (char *)malloc(12);
+				tmp2[0] = input[0];
+				tmp2[1] = input[1];
+				tmp2[2] = ' ';
+				tmp2[3] = '\0';
+				strcat(tmp2, months[sum - 1]);
+				tmp2[7] = ' ';
+				tmp2[8] = input[6];
+				tmp2[9] = input[7];
+				tmp2[10] = input[8];
+				tmp2[11] = input[9];
+				tmp2[12] = '\0';
+				free(input);
+				return tmp2;
+			}
+			else {
+				return input;
+			}
+		default:
+			return NULL;
 	}
 }

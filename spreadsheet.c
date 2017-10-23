@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
@@ -529,10 +530,14 @@ char *getAnswerFromFormula(Spreadsheet *sp, const char *formula) {
 		switch(t.type) {
 			case POS:
 				temp = gtk_grid_get_child_at(GTK_GRID(sp->grid), t.formuladata.position.col - 1, t.formuladata.position.row - 1);
+				if(temp == NULL) {
+					printf("Invalid cell accessed !!\n");
+					displayMessage(sp, "Invalid cell accessed !!");
+					return NULL;
+				}
 				label = gtk_button_get_label(GTK_BUTTON(temp));
 				for(i = 0; i < strlen(label); i++) {
 					if(label[i] < '0' || label[i] > '9') {
-						printf("Returning NULL & label[%d] = %c %d\n", i, label[i], label[i]);
 						displayMessage(sp, "Cell contains non integer data !!");
 						return NULL;
 					}

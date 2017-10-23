@@ -282,7 +282,6 @@ void saveClicked(GtkWidget *widget, gpointer data) {
 		res = gtk_dialog_run(GTK_DIALOG(dialog));
 		if(res == GTK_RESPONSE_ACCEPT) {
 			filename = gtk_file_chooser_get_filename(chooser);
-			printf("I get filename as %s\n", filename);
 		}
 	
 		gtk_widget_destroy(dialog);
@@ -306,7 +305,6 @@ void saveClicked(GtkWidget *widget, gpointer data) {
 			if(countofcomma == 0 && countofquotes == 0) {
 				actual = (char *)malloc(strlen(label) + 1);
 				strcpy(actual, label);
-				puts(actual);
 			}
 			else {
 				/*
@@ -439,6 +437,24 @@ void dateformat3(GtkWidget *widget, gpointer data) {
 	gtk_widget_show_all(window);
 	return;
 }
+void hildehelp(GtkWidget *widget, gpointer data) {
+}
+void showhelp(GtkWidget *widget, gpointer data) {
+	GtkBuilder *builder;
+	GtkAboutDialog *dialog;
+	int res;
+	builder = gtk_builder_new();
+	gtk_builder_add_from_file(builder, "res/layouts/about.glade", NULL);
+	gtk_builder_connect_signals(builder, NULL);
+	dialog = GTK_ABOUT_DIALOG(GTK_DIALOG(gtk_builder_get_object(builder, "aboutdialog1")));
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	if(res == GTK_RESPONSE_CANCEL ) {
+		gtk_widget_destroy(GTK_WIDGET(dialog));
+		return;
+	}
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+	return;
+}
 int main(int argc, char*argv[]) {
 	GtkCssProvider *provider;
 	GtkStyleContext *context;
@@ -456,8 +472,6 @@ int main(int argc, char*argv[]) {
 	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 	g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	init(&sheet, builder);
-	//addGridFromCSVFile(&sheet, argv[1]);
-	addGridFromODSFile(&sheet, argv[1]);
 	context = gtk_widget_get_style_context(window);
 	gtk_style_context_add_class(context, "window");
 	tmp = GTK_WIDGET(gtk_builder_get_object(builder, "boldButton"));
@@ -494,6 +508,7 @@ int main(int argc, char*argv[]) {
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "dateformat1")), "clicked", G_CALLBACK(dateformat1), &sheet);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "dateformat2")), "clicked", G_CALLBACK(dateformat2), &sheet);
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "dateformat3")), "clicked", G_CALLBACK(dateformat3), &sheet);
+	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(builder, "help")), "clicked", G_CALLBACK(showhelp), &sheet);
 	if(argc > 1) {
 		if(argc > 2) {
 			printf("Unknown option %s\n", argv[1]);
@@ -511,7 +526,6 @@ int main(int argc, char*argv[]) {
 	else
 		displayMessage(&sheet, "Click on open button to open a file");
 	g_signal_connect(window, "key-release-event", G_CALLBACK(keyPressHandler), &sheet);
-	printf("%s", formatdate("20-02-1999", 50));
 	gtk_widget_show_all(window);
 	gtk_main();
 	return 0;

@@ -8,9 +8,9 @@
     <property name="program_name">Spreaddit - A simple, lightweight spreadsheet editor</property>
     <property name="copyright" translatable="yes">Ashutosh B. Sathe</property>
     <property name="comments" translatable="yes">Spreaddit is a simple and lightweight spreadsheet editor focussing mainly on stability.</property>
-    <property name="website">ashutoshbsathe.github.io/spreaddit.html</property>
+	<property name="website">https://ashutoshbsathe.github.io/spreaddit/spreaddit.html</property>
     <property name="website_label" translatable="yes">Official Documentation</property>
-    <property name="logo">csv-icon.png</property>
+	<property name="logo">../imgs/logo.png</property>
     <property name="license_type">gpl-3-0</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="helpdialog">

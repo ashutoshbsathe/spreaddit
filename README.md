@@ -76,4 +76,4 @@ Select a cell containing the date and click on the desired date formatting butto
 (Icons used in this project are taken from libreoffice wiki along with default icons in gtk library)<br>
 Main Icon Inspiration : http://www.iconarchive.com/show/filetype-icons-by-graphicloads/csv-icon.html
 
-<!-- End README -->
+<!-- End of README -->
